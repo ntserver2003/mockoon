@@ -1,0 +1,7 @@
+{ "AAAA":"aaa"
+varname: {{varname}}
+varname1: {{varname1}}
+
+test from partial
+{{currencies}}
+}

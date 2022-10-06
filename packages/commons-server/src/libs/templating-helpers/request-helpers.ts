@@ -1,12 +1,17 @@
 import { Environment } from '@mockoon/commons';
 import { Request } from 'express';
-import { SafeString } from 'handlebars';
+import { compile as hbsCompile, SafeString } from 'handlebars';
 import { get as objectGet } from 'object-path';
-import { convertPathToArray } from '../utils';
+import { convertPathToArray, resolvePathFromEnvironment } from '../utils';
+import { MockoonServerOptions } from '@mockoon/commons/src';
+import { readFileSync } from 'fs';
+import { FakerWrapper } from './faker-wrapper';
+import { Helpers } from './helpers';
 
 export const RequestHelpers = function (
   request: Request,
-  environment: Environment
+  environment: Environment,
+  serverOptions: MockoonServerOptions
 ) {
   return {
     // get json property from body
@@ -210,6 +215,24 @@ export const RequestHelpers = function (
     // use request method
     method: function () {
       return request.method;
+    },
+    // Returns partial
+    partial: function(file: string, context: any) {
+      const partialPath = resolvePathFromEnvironment(
+        file,
+        serverOptions?.environmentDirectory
+      );
+      const data = readFileSync(partialPath, { encoding: 'utf8', flag: 'r' }).toString();
+
+      // appendFileSync('d:\\mockoon_partial_helper.log', JSON.stringify(context) + '\r\n');
+
+      return hbsCompile(data)(context.data.root, {
+        helpers: {
+          ...FakerWrapper,
+          ...RequestHelpers(request, environment, serverOptions),
+          ...Helpers
+        },
+      });
     }
   };
 };

@@ -14,7 +14,7 @@
   "scripts": {
     "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
     "test": "ts-mocha -p ./tsconfig-build.json --timeout 40000 --forbid-only --file test/libs/setup.ts test/**/*.spec.ts",
-    "build": "rm -rf dist && tsc -p tsconfig-build.json && oclif-dev manifest"
+    "build": "del dist /Q /S && tsc -p tsconfig-build.json && oclif-dev manifest"
   },
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",

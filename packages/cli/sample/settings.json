@@ -1,0 +1,23 @@
+{
+  "welcomeShown": true,
+  "bannerDismissed": [],
+  "logSizeLimit": 10000,
+  "maxLogsPerEnvironment": 50,
+  "truncateRouteName": true,
+  "environmentMenuSize": 100,
+  "routeMenuSize": 200,
+  "logsMenuSize": 150,
+  "fakerLocale": "en",
+  "fakerSeed": null,
+  "lastChangelog": "1.20.0",
+  "environments": [
+    {
+      "uuid": "edf78620-eadf-437b-8553-a85e6469db9d",
+      "path": "D:\\MY_PROG\\Electron\\mockoon\\packages\\desktop\\tmp\\storage\\demo.json"
+    }
+  ],
+  "enableTelemetry": true,
+  "storagePrettyPrint": true,
+  "fileWatcherEnabled": "disabled",
+  "dialogWorkingDir": ""
+}
