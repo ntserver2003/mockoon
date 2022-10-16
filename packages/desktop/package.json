@@ -1,7 +1,7 @@
 {
   "name": "@mockoon/desktop",
   "description": "Mockoon is the easiest and quickest way to run mock APIs locally. No remote deployment, no account required, open source.",
-  "version": "1.20.0",
+  "version": "1.20.0-partials",
   "private": true,
   "author": {
     "name": "Guillaume Monnet",

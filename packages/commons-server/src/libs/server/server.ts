@@ -442,7 +442,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       let body = routeResponse.body;
 
       if (!routeResponse.disableTemplating) {
-        body = TemplateParser(body || '', request, this.environment, this.options);
+        body = TemplateParser(body || '', request, this.environment, this.options?.environmentDirectory);
       }
 
       response.body = body;
@@ -495,7 +495,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
         routeResponse.filePath.replace(/\\/g, '/'),
         request,
         this.environment,
-        this.options
+        this.options?.environmentDirectory
       );
 
       filePath = resolvePathFromEnvironment(
@@ -534,7 +534,6 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
               data.toString(),
               request,
               this.environment,
-              this.options,
               filePath
             );
 
@@ -780,7 +779,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           header.value,
           request,
           this.environment,
-          this.options
+          this.options?.environmentDirectory
         );
       } catch (error) {
         const errorMessage = Texts.EN.MESSAGES.HEADER_PARSING_ERROR;

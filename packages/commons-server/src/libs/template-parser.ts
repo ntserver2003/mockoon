@@ -13,14 +13,12 @@ import { PartialRegister } from './partial-register';
  * @param content
  * @param request
  * @param environment
- * @param serverOptions
  * @param filePath
  */
 export const TemplateParser = function (
   content: string,
   request: Request,
   environment: Environment,
-  serverOptions: MockoonServerOptions,
   filePath?: string
 ): string {
   try {
@@ -30,7 +28,7 @@ export const TemplateParser = function (
         partials: PartialRegister(filePath),
         helpers: {
           ...FakerWrapper,
-          ...RequestHelpers(request, environment, serverOptions),
+          ...RequestHelpers(request, environment/* , serverOptions */),
           ...Helpers
         }
       }
