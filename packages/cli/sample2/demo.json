@@ -1,9 +1,0 @@
-{{setVar 'varname' 'value'}}{{setVar 'varname1' (body 'id')}}
-usage:
-varname: {{varname}}
-varname1: {{varname1}}
-{
-{{partial 'data1.json'}}
-}
-Include partial:
-{{> data.json }}

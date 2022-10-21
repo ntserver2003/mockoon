@@ -1,5 +1,0 @@
-begin partial
-varname: {{varname}}
-varname1: {{varname1}}
-{{currencies}}
-end partial
