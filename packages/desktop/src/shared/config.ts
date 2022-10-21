@@ -1,4 +1,4 @@
-const appVersion: string = require('../../package.json').version;
+const appVersion: string = require('../../package.json').appversion;
 const websiteURL = 'https://mockoon.com/';
 const apiURL = 'https://api.mockoon.com/';
 const docsURL = `${websiteURL}docs/latest/`;

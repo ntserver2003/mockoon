@@ -1,6 +1,6 @@
 {
   "uuid": "18815679-2ed6-46a6-b5e1-62760cbdd0f1",
-  "lastMigration": 22,
+  "lastMigration": 24,
   "name": "Sample",
   "endpointPrefix": "",
   "latency": 0,
@@ -26,7 +26,9 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "databucketID": "",
+          "bodyType": "FILE"
         }
       ],
       "enabled": true,
@@ -63,5 +65,6 @@
       "key": "",
       "value": ""
     }
-  ]
+  ],
+  "data": []
 }

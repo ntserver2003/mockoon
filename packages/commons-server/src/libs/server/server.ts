@@ -980,7 +980,9 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             false,
             databucket.value,
             environment,
-            this.processedDatabuckets
+            this.processedDatabuckets,
+            undefined,
+            this.options?.environmentDirectory
           );
 
           try {
@@ -1055,7 +1057,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
               targetDatabucket.value,
               environment,
               this.processedDatabuckets,
-              request
+              request,
+              this.options?.environmentDirectory
             );
             try {
               const JSONParsedcontent = JSON.parse(content);
