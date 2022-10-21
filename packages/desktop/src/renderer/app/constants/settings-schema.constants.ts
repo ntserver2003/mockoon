@@ -13,16 +13,16 @@ export const SettingsDefault: Settings = {
   logSizeLimit: 10000,
   maxLogsPerEnvironment: Config.defaultMaxLogsPerEnvironment,
   truncateRouteName: true,
-  environmentMenuSize: Config.defaultEnvironmentMenuSize,
-  routeMenuSize: Config.defaultRouteMenuSize,
-  logsMenuSize: Config.defaultLogsMenuSize,
+  mainMenuSize: Config.defaultMainMenuSize,
+  secondaryMenuSize: Config.defaultSecondaryMenuSize,
   fakerLocale: 'en',
   fakerSeed: null,
   lastChangelog: Config.appVersion,
   environments: [],
   enableTelemetry: true,
   storagePrettyPrint: true,
-  fileWatcherEnabled: FileWatcherOptions.DISABLED
+  fileWatcherEnabled: FileWatcherOptions.DISABLED,
+  dialogWorkingDir: ''
 };
 
 export const SettingsSchema = Joi.object<Settings & PreMigrationSettings, true>(
@@ -45,17 +45,13 @@ export const SettingsSchema = Joi.object<Settings & PreMigrationSettings, true>(
     truncateRouteName: Joi.boolean()
       .failover(SettingsDefault.truncateRouteName)
       .required(),
-    environmentMenuSize: Joi.number()
-      .min(Config.defaultEnvironmentMenuSize)
-      .failover(SettingsDefault.environmentMenuSize)
+    mainMenuSize: Joi.number()
+      .min(Config.defaultMainMenuSize)
+      .failover(SettingsDefault.mainMenuSize)
       .required(),
-    routeMenuSize: Joi.number()
-      .min(Config.defaultRouteMenuSize)
-      .failover(SettingsDefault.routeMenuSize)
-      .required(),
-    logsMenuSize: Joi.number()
-      .min(Config.defaultLogsMenuSize)
-      .failover(SettingsDefault.logsMenuSize)
+    secondaryMenuSize: Joi.number()
+      .min(Config.defaultSecondaryMenuSize)
+      .failover(SettingsDefault.secondaryMenuSize)
       .required(),
     fakerLocale: Joi.string().failover(SettingsDefault.fakerLocale).required(),
     fakerSeed: Joi.number()
@@ -89,6 +85,9 @@ export const SettingsSchema = Joi.object<Settings & PreMigrationSettings, true>(
         FileWatcherOptions.AUTO
       )
       .failover(SettingsDefault.fileWatcherEnabled)
+      .required(),
+    dialogWorkingDir: Joi.string()
+      .failover(SettingsDefault.dialogWorkingDir)
       .required()
   }
 )

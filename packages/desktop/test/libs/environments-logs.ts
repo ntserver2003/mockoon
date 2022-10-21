@@ -1,10 +1,36 @@
+import { ChainablePromiseElement } from 'webdriverio';
 import { EnvironmentLogsTabsNameType } from '../../src/renderer/app/models/store.model';
+import navigation from '../libs/navigation';
 import utils from '../libs/utils';
 
 /**
  * Requires a switch to the settings view
  */
 class EnvironmentsLogs {
+  public get container(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.environment-logs');
+  }
+
+  public get viewBodyEditor(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.environment-logs-open-request-body');
+  }
+
+  public getMetadataIcon(
+    logIndex: number
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(
+      `.environment-logs-column:nth-child(1) .menu-list .nav-item:nth-child(${logIndex}) .nav-link div div:first-of-type div:nth-of-type(3) .logs-metadata`
+    );
+  }
+
+  public getMockBtn(
+    logIndex: number
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(
+      `.environment-logs-column:nth-child(1) .menu-list .nav-item:nth-child(${logIndex}) .btn-mock`
+    );
+  }
+
   public async select(index: number) {
     await $(
       `.environment-logs-column:nth-child(1) .menu-list .nav-item:nth-child(${index})`
@@ -21,13 +47,11 @@ class EnvironmentsLogs {
       $$('.environment-logs-column:nth-child(1) .menu-list .nav-item'),
       expected
     );
-    const tabText = $(
-      'app-header .header .nav .nav-item:nth-child(3) .nav-link'
-    );
+
     if (expected === 0) {
-      await utils.assertElementText(tabText, 'Logs');
+      await navigation.assertHeaderValue('ENV_LOGS', 'Logs');
     } else {
-      await utils.assertElementText(tabText, `Logs ${expected}`);
+      await navigation.assertHeaderValue('ENV_LOGS', `Logs ${expected}`);
     }
   }
 
@@ -98,9 +122,7 @@ class EnvironmentsLogs {
   }
 
   public async clickMockButton(logIndex: number) {
-    await $(
-      `.environment-logs-column:nth-child(1) .menu-list .nav-item:nth-child(${logIndex}) .btn-mock`
-    ).click();
+    await this.getMockBtn(logIndex).click();
   }
 
   public async assertViewBodyLogButtonPresence(reverse = false) {

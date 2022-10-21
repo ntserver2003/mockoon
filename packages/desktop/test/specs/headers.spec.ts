@@ -1,3 +1,4 @@
+import { BodyTypes } from '@mockoon/commons';
 import { promises as fs } from 'fs';
 import environments from '../libs/environments';
 import headersUtils from '../libs/headers-utils';
@@ -77,6 +78,18 @@ const getFileNoHeader: HttpCall = {
   }
 };
 
+const getFileNoMime: HttpCall = {
+  description: 'Call GET file, with no mime type',
+  path: '/file-nomime',
+  method: 'GET',
+  testedResponse: {
+    status: 200,
+    headers: {
+      'content-type': 'text/plain'
+    }
+  }
+};
+
 const getCORSHeaders: HttpCall = {
   description: 'Call OPTIONS headers',
   path: '/headers',
@@ -118,7 +131,7 @@ describe('Headers', () => {
 
       await routes.switchTab('HEADERS');
 
-      await utils.assertElementText(environments.headersTab, 'Headers 1');
+      await navigation.assertHeaderValue('ENV_HEADERS', 'Headers 1');
       await utils.assertElementText(routes.headersTab, 'Headers 1');
 
       await headersUtils.add('route-response-headers', {
@@ -145,14 +158,11 @@ describe('Headers', () => {
         key: 'custom-header',
         value: 'envvalue'
       });
-      await utils.assertElementText(environments.headersTab, 'Headers 3');
+      await navigation.assertHeaderValue('ENV_HEADERS', 'Headers 3');
     });
 
     it('should verify the header tab counter', async () => {
-      await utils.assertElementText(
-        $('app-header .header .nav .nav-item:nth-child(2) .nav-link'),
-        'Headers 3'
-      );
+      await navigation.assertHeaderValue('ENV_HEADERS', 'Headers 3');
     });
 
     it('should call /headers, route headers should override global headers', async () => {
@@ -209,6 +219,7 @@ describe('Headers', () => {
 
       await navigation.switchView('ENV_ROUTES');
       await routes.select(2);
+      await routes.selectBodyType(BodyTypes.FILE);
 
       await routes.assertContentType('application/xml');
       await http.assertCallWithPort(getFile, 3000);
@@ -216,8 +227,17 @@ describe('Headers', () => {
 
     it('should call /file-noheader should get PDF content-type from file mime type', async () => {
       await routes.select(3);
+      await routes.selectBodyType(BodyTypes.FILE);
       await routes.assertContentType('application/pdf');
       await http.assertCallWithPort(getFileNoHeader, 3000);
+    });
+
+    it('should call /file-nomime should revert to the environment content type', async () => {
+      await fs.copyFile('./test/data/res/filenoext', './tmp/storage/filenoext');
+      await routes.select(4);
+      await routes.selectBodyType(BodyTypes.FILE);
+      await routes.assertContentType('text/plain');
+      await http.assertCallWithPort(getFileNoMime, 3000);
     });
   });
 

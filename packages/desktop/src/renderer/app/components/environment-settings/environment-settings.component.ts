@@ -63,12 +63,19 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
   /**
    * Open file browsing dialog
    */
-  public async browseFiles(target: string) {
-    const filePath = await this.dialogsService.showOpenDialog('Choose a file');
-
-    if (filePath) {
-      this.activeEnvironmentForm.get(['tlsOptions', target]).setValue(filePath);
-    }
+  public browseFiles(target: string) {
+    this.dialogsService
+      .showOpenDialog('Choose a file', null, false)
+      .pipe(
+        tap((filePath) => {
+          if (filePath) {
+            this.activeEnvironmentForm
+              .get(['tlsOptions', target])
+              .setValue(filePath);
+          }
+        })
+      )
+      .subscribe();
   }
 
   /**

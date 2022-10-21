@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import ObjectId from 'bson-objectid';
 import { format as dateFormat } from 'date-fns';
 import { HelperOptions, SafeString } from 'handlebars';
 import { EOL } from 'os';
@@ -28,7 +27,7 @@ export const Helpers = {
     let content = '';
     let count = 0;
     const options = args[args.length - 1];
-    const data = { ...options };
+    const data = { ...options.data };
 
     if (arguments.length === 3) {
       // If given two numbers then pick a random one between the two
@@ -173,15 +172,9 @@ export const Helpers = {
   newline: function () {
     return '\n';
   },
-  // returns a compatible ObjectId
-  // * if value is undefined or null returns a random ObjectId
-  // * if value is defined is used a seed, can be a string, number or Buffer
-  objectId: function (defaultValue: any) {
-    if (typeof defaultValue === 'object') {
-      defaultValue = undefined;
-    }
-
-    return new ObjectId(defaultValue).toHexString();
+  // returns a Mongodb ObjectId
+  objectId: function () {
+    return faker.database.mongodbObjectId();
   },
   // concat multiple string and/or variables (like @index)
   concat: function (...args: any[]) {
@@ -371,6 +364,24 @@ export const Helpers = {
 
     return text.toUpperCase();
   },
+  // parse a string and returns corresponding int
+  parseInt: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+
+    if (parameters.length === 0) {
+      return '';
+    }
+
+    // make it compatible with SafeString (from queryParam, etc)
+    const text = fromSafeString(parameters[0]);
+    const result = parseInt(text, 10);
+
+    if (isNaN(result)) {
+      return '';
+    } else {
+      return result;
+    }
+  },
   // Joins Array Values as String with separator
   join: function (arr: string[], sep: string) {
     if (!arr || !(arr instanceof Array)) {
@@ -442,17 +453,21 @@ export const Helpers = {
     return number1 <= number2;
   },
   // set a variable to be used in the template
-  setVar: function (name: string, value: unknown) {
-    if (typeof name === 'object') {
-      return;
-    }
-
+  setVar: function (...args: any[]) {
     // return if not all parameters have been provided
     if (arguments.length < 3) {
       return;
     }
 
-    this[name] = value;
+    const options = args[args.length - 1];
+    const name = args[0];
+    const value = args[1];
+
+    if (!options.data) {
+      options.data = {};
+    }
+
+    options.data[name] = value;
   },
   int: function (...args: any[]) {
     const options: { min?: number; max?: number; precision?: number } = {
@@ -485,16 +500,15 @@ export const Helpers = {
     return faker.datatype.number(options);
   },
   date: function (...args: any[]) {
-    let from, to, format;
+    let format;
+    const from = fromSafeString(args[0]);
+    const to = fromSafeString(args[1]);
 
     if (
       args.length >= 3 &&
-      typeof args[0] === 'string' &&
-      typeof args[1] === 'string'
+      typeof from === 'string' &&
+      typeof to === 'string'
     ) {
-      from = args[0];
-      to = args[1];
-
       const randomDate = faker.date.between(from, to);
 
       if (args.length === 4 && typeof args[2] === 'string') {

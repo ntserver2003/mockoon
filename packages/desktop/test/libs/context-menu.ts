@@ -1,15 +1,24 @@
 import { ChainablePromiseElement } from 'webdriverio';
 import utils from '../libs/utils';
 
-type Targets = 'environments' | 'routes';
+type Targets = 'environments' | 'routes' | 'databuckets';
 
 class ContextMenu {
   private targetSelectors = {
     environments: '.environments-menu',
-    routes: '.routes-menu'
+    routes: '.routes-menu',
+    databuckets: '.databuckets-menu'
   };
 
-  public async openContextMenu(
+  public getItem(
+    contextMenuItemIndex: number
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(
+      `.context-menu .context-menu-item:nth-child(${contextMenuItemIndex})`
+    );
+  }
+
+  public async open(
     targetMenu: Targets,
     menuItemIndex?: number
   ): Promise<void> {
@@ -19,7 +28,7 @@ class ContextMenu {
     await $('.context-menu').waitForExist();
   }
 
-  public async closeContextMenu(): Promise<void> {
+  public async close(): Promise<void> {
     await $('body').click({ x: 0, y: 0 });
   }
 
@@ -28,10 +37,22 @@ class ContextMenu {
     menuItemIndex?: number,
     contextMenuItemIndex?: number
   ) {
-    await this.openContextMenu(targetMenu, menuItemIndex);
-    await $(
-      `.context-menu .context-menu-item:nth-child(${contextMenuItemIndex})`
-    ).click();
+    await this.open(targetMenu, menuItemIndex);
+    await this.getItem(contextMenuItemIndex).click();
+  }
+
+  public async assertEntryEnabled(
+    targetMenu: Targets,
+    menuItemIndex: number,
+    contextMenuItemIndex: number,
+    reverse = true
+  ) {
+    await this.open(targetMenu, menuItemIndex);
+    await utils.assertHasClass(
+      this.getItem(contextMenuItemIndex),
+      'disabled',
+      reverse
+    );
   }
 
   public async assertEntryDisabled(
@@ -40,9 +61,9 @@ class ContextMenu {
     contextMenuItemIndex: number,
     reverse = false
   ) {
-    await this.openContextMenu(targetMenu, menuItemIndex);
+    await this.open(targetMenu, menuItemIndex);
     await utils.assertHasClass(
-      $(`.context-menu .context-menu-item:nth-child(${contextMenuItemIndex})`),
+      this.getItem(contextMenuItemIndex),
       'disabled',
       reverse
     );
@@ -53,13 +74,9 @@ class ContextMenu {
     menuItemIndex?: number,
     contextMenuItemIndex?: number
   ) {
-    await this.openContextMenu(targetMenu, menuItemIndex);
-    await $(
-      `.context-menu .context-menu-item:nth-child(${contextMenuItemIndex})`
-    ).click();
-    await $(
-      `.context-menu .context-menu-item:nth-child(${contextMenuItemIndex})`
-    ).click();
+    await this.open(targetMenu, menuItemIndex);
+    await this.getItem(contextMenuItemIndex).click();
+    await this.getItem(contextMenuItemIndex).click();
   }
 
   private getMenuEntry(

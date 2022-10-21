@@ -3,7 +3,6 @@
     <img width="200" height="200" src="https://mockoon.com/images/logo-square-app.png">
   </a>
   <br>
-  <a href="https://mockoon.com/#download"><img src="https://img.shields.io/badge/Download%20app-Go-green.svg?style=flat-square&colorB=1997c6"/></a>
   <a href="https://mockoon.com/"><img src="https://img.shields.io/badge/Website-Go-green.svg?style=flat-square&colorB=1997c6"/></a>
   <a href="http://eepurl.com/dskB2X"><img src="https://img.shields.io/badge/Newsletter-Subscribe-green.svg?style=flat-square"/></a>
   <a href="https://twitter.com/GetMockoon"><img src="https://img.shields.io/badge/Twitter_@GetMockoon-follow-blue.svg?style=flat-square&colorB=1da1f2"/></a>
@@ -80,6 +79,10 @@ Mockoon CLI is available as an [NPM package](https://www.npmjs.com/package/@mock
 ## Mockoon's documentation
 
 You will find Mockoon's [documentation](https://mockoon.com/docs/latest) on the official website. It covers Mockoon's most complex features. Feel free to contribute or ask for new topics to be covered.
+
+## Changelogs
+
+You will find Mockoon [desktop](https://mockoon.com/releases/desktop/) and [CLI](https://mockoon.com/releases/cli/) changelogs on the official website.
 
 ## Support/feedback
 

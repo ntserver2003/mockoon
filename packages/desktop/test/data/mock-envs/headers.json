@@ -1,6 +1,6 @@
 {
   "uuid": "5867a05a-fa89-4a4e-9116-8743188a1c07",
-  "lastMigration": 22,
+  "lastMigration": 24,
   "name": "FT env",
   "endpointPrefix": "",
   "latency": 0,
@@ -26,7 +26,9 @@
           "rules": [],
           "rulesOperator": "OR",
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "databucketID": "",
+          "bodyType": "INLINE"
         }
       ],
       "responseMode": null
@@ -51,7 +53,9 @@
           "rules": [],
           "rulesOperator": "OR",
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "databucketID": "",
+          "bodyType": "FILE"
         }
       ],
       "responseMode": null
@@ -76,7 +80,36 @@
           "rules": [],
           "rulesOperator": "OR",
           "fallbackTo404": false,
-          "default": true
+          "default": true,
+          "databucketID": "",
+          "bodyType": "FILE"
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "493365b8-7f69-434b-adca-e6092a17c1dc",
+      "method": "get",
+      "endpoint": "file-nomime",
+      "documentation": "",
+      "enabled": true,
+      "responses": [
+        {
+          "uuid": "d1208679-4a8b-4d33-bd5b-ee8d6d3e0e8c",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "filePath": "./filenoext",
+          "sendFileAsBody": false,
+          "disableTemplating": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "fallbackTo404": false,
+          "default": true,
+          "databucketID": "",
+          "bodyType": "FILE"
         }
       ],
       "responseMode": null
@@ -98,5 +131,6 @@
     "keyPath": "",
     "caPath": "",
     "passphrase": ""
-  }
+  },
+  "data": []
 }
