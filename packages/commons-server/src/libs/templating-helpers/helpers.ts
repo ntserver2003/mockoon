@@ -286,6 +286,60 @@ export const Helpers = {
 
     return data.includes(search);
   },
+  // Returns method returns a new string with one, some, or all matches of a pattern replaced by a replacement.
+  replace: function (
+    data: string | SafeString | HelperOptions,
+    pattern: string | SafeString | HelperOptions,
+    replacement: string | SafeString | HelperOptions | undefined
+  ) {
+    data =
+      (typeof data === 'object' || typeof data == 'undefined') &&
+      !(data instanceof SafeString)
+        ? ''
+        : data.toString();
+    pattern =
+      (typeof pattern === 'object' || typeof pattern == 'undefined') &&
+      !(pattern instanceof SafeString)
+        ? ''
+        : pattern.toString();
+
+    replacement =
+      (typeof replacement === 'object' || typeof replacement == 'undefined') &&
+      !(replacement instanceof SafeString)
+        ? ''
+        : replacement.toString();
+
+    return data.replace(pattern, replacement);
+  },
+  // Returns the extracts characters, between two indices (positions), from a string, and returns the substring.
+  substring: function (
+    data: string | SafeString | HelperOptions,
+    from: number | string | SafeString | HelperOptions | undefined,
+    to: number | string | SafeString | HelperOptions | undefined
+  ) {
+    data =
+      typeof data === 'object' && !(data instanceof SafeString)
+        ? ''
+        : data.toString();
+
+    const fromValue =
+      (typeof from === 'object' || typeof from == 'undefined') &&
+      !(from instanceof SafeString)
+        ? 0
+        : Number(from.toString());
+
+    const toValue =
+      (typeof to === 'object' || typeof to == 'undefined') &&
+      !(to instanceof SafeString)
+        ? undefined
+        : Number(to.toString());
+
+    if (typeof toValue !== 'undefined') {
+      return data.substring(fromValue, toValue);
+    } else {
+      return data.substring(fromValue);
+    }
+  },
   // Returns the substring of a string based on the passed in starting index and length.
   substr: function (
     data: string | SafeString | HelperOptions,
