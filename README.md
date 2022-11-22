@@ -16,11 +16,18 @@ Mockoon is the easiest and quickest way to run mock APIs locally. No remote depl
 
 It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you work faster with APIs by mocking them. Integrate third-party APIs quicker, improve your integration tests, speed up your development, etc.
 
-➡️ [Download](https://mockoon.com/download/)
+➡️ [Download](https://github.com/ntserver2003/mockoon/releases/latest/)
 
 <div align="center">
   <img width="50%" src="https://mockoon.com/images/repo-illustration.png">
 </div>
+
+## Fork differences
+
+Additional features:
+
+- [Handlebars Partials](https://handlebarsjs.com/guide/partials.html#partials) support 
+- `substring`, `replace` helpers
 
 ## Features
 
@@ -55,7 +62,7 @@ Mockoon is an open-source project built by volunteer maintainers. If you like ou
 
 ## Download the desktop application
 
-You can get Mockoon desktop's [latest release](https://github.com/mockoon/mockoon/releases/latest) directly from this repository or on the official [website](https://mockoon.com/#download). Mockoon desktop is also available through:
+You can get Mockoon desktop's [latest release](https://github.com/ntserver2003/mockoon/releases/latest) directly from this repository.  Original Mockoon desktop available through:
 
 MacOS:
 
