@@ -1,15 +1,14 @@
-import { ChainablePromiseElement } from 'webdriverio';
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import utils from '../libs/utils';
 
 type SettingNames =
-  | 'localhostOnly'
   | 'endpointPrefix'
   | 'name'
+  | 'hostname'
   | 'port'
   | 'certPath'
   | 'keyPath'
   | 'passphrase'
-  | 'localhostOnly'
   // enable tls formControlName
   | 'enabled';
 
@@ -21,12 +20,12 @@ class EnvironmentsSettings {
     return $('app-environment-settings #tls-cert-container');
   }
 
-  public get prefix(): ChainablePromiseElement<WebdriverIO.Element> {
-    return $('app-environment-settings input[formcontrolname=endpointPrefix]');
+  public get hostname(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('app-environment-settings input[formcontrolname=hostname]');
   }
 
-  public get localhostOnly(): ChainablePromiseElement<WebdriverIO.Element> {
-    return $('app-environment-settings label[for=env-settings-localhost-only]');
+  public get prefix(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('app-environment-settings input[formcontrolname=endpointPrefix]');
   }
 
   public get enableTLS(): ChainablePromiseElement<WebdriverIO.Element> {
@@ -48,6 +47,11 @@ class EnvironmentsSettings {
   ): Promise<void> {
     const setting = this.getSettingInput(settingName);
     await utils.setElementValue(setting, value);
+  }
+
+  public async clearSettingValue(settingName: SettingNames): Promise<void> {
+    const setting = this.getSettingInput(settingName);
+    await utils.clearElementValue(setting);
   }
 
   public async assertSettingValue(

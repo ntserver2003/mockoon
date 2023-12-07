@@ -6,14 +6,13 @@ import {
 } from '@mockoon/commons-server';
 import {
   BrowserWindow,
+  Menu,
   clipboard,
   dialog,
   ipcMain,
-  Menu,
   shell
 } from 'electron';
 import { getDataPath } from 'electron-json-storage';
-import { error as logError, info as logInfo } from 'electron-log';
 import { promises as fsPromises } from 'fs';
 import { createServer } from 'http';
 import { lookup as mimeTypeLookup } from 'mime-types';
@@ -26,11 +25,12 @@ import {
   IPCMainHandlerChannels,
   IPCMainListenerChannels
 } from 'src/main/constants/ipc.constants';
-import { migrateData } from 'src/main/libs/data-migration';
+import { logError, logInfo } from 'src/main/libs/logs';
 import {
   toggleEnvironmentMenuItems,
   toggleRouteMenuItems
 } from 'src/main/libs/menu';
+import { showFolderInExplorer } from 'src/main/libs/paths';
 import { ServerInstance } from 'src/main/libs/server-management';
 import {
   getSettings,
@@ -44,9 +44,14 @@ import {
   unwatchEnvironmentFile,
   watchEnvironmentFile
 } from 'src/main/libs/watch-file';
+import {
+  handleZoomIn,
+  handleZoomOut,
+  handleZoomReset
+} from 'src/main/libs/zoom';
 import { Settings } from 'src/shared/models/settings.model';
 
-declare const isTesting: boolean;
+declare const IS_TESTING: boolean;
 
 const dialogMocks: { [x: string]: string[] } = { save: [], open: [] };
 
@@ -94,14 +99,18 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
 
   ipcMain.on('APP_LOGS', (event, data) => {
     if (data.type === 'info') {
-      logInfo(data.message);
+      logInfo(data.message, data.payload);
     } else if (data.type === 'error') {
-      logError(data.message);
+      logError(data.message, data.payload);
     }
   });
 
   ipcMain.on('APP_SHOW_FILE', (event, path) => {
     shell.showItemInFolder(path);
+  });
+
+  ipcMain.on('APP_SHOW_FOLDER', (event, name) => {
+    showFolderInExplorer(name);
   });
 
   ipcMain.on('APP_OPEN_EXTERNAL_LINK', (event, url) => {
@@ -125,6 +134,16 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
     applyUpdate();
   });
 
+  ipcMain.on('APP_ZOOM', (event, action: 'IN' | 'OUT' | 'RESET') => {
+    if (action === 'IN') {
+      handleZoomIn(mainWindow);
+    } else if (action === 'OUT') {
+      handleZoomOut(mainWindow);
+    } else if (action === 'RESET') {
+      handleZoomReset(mainWindow);
+    }
+  });
+
   ipcMain.handle(
     'APP_UNWATCH_FILE',
     async (event, UUID) => await unwatchEnvironmentFile(UUID)
@@ -132,7 +151,7 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
 
   ipcMain.handle(
     'APP_UNWATCH_ALL_FILE',
-    async (event) => await unwatchAllEnvironmentFiles()
+    async () => await unwatchAllEnvironmentFiles()
   );
 
   ipcMain.handle('APP_GET_OS', () => process.platform);
@@ -153,10 +172,7 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
     }
   );
 
-  ipcMain.handle(
-    'APP_READ_SETTINGS_DATA',
-    async (event) => await loadSettings()
-  );
+  ipcMain.handle('APP_READ_SETTINGS_DATA', async () => await loadSettings());
 
   ipcMain.handle(
     'APP_WRITE_SETTINGS_DATA',
@@ -175,7 +191,7 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
       await fsPromises.writeFile(filePath, data, 'utf-8')
   );
 
-  ipcMain.handle('APP_READ_CLIPBOARD', async (event) =>
+  ipcMain.handle('APP_READ_CLIPBOARD', async () =>
     clipboard.readText('clipboard')
   );
 
@@ -185,7 +201,7 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
   ipcMain.handle('APP_SHOW_OPEN_DIALOG', async (event, options) => {
     options.defaultPath = getDialogDefaultPath();
 
-    if (isTesting) {
+    if (IS_TESTING) {
       return { filePaths: [dialogMocks.open.pop()] };
     } else {
       return await dialog.showOpenDialog(mainWindow, options);
@@ -196,16 +212,18 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
    * This IPC channel must be mocked when running e2e tests
    */
   ipcMain.handle('APP_SHOW_SAVE_DIALOG', async (event, options) => {
-    options.defaultPath = getDialogDefaultPath();
+    if (!options.defaultPath) {
+      options.defaultPath = getDialogDefaultPath();
+    }
 
-    if (isTesting) {
+    if (IS_TESTING) {
       return { filePath: dialogMocks.save.pop() };
     } else {
       return await dialog.showSaveDialog(mainWindow, options);
     }
   });
 
-  ipcMain.handle('APP_GET_PLATFORM', (event) => process.platform);
+  ipcMain.handle('APP_GET_PLATFORM', () => process.platform);
 
   ipcMain.handle('APP_BUILD_STORAGE_FILEPATH', (event, name: string) =>
     pathJoin(getDataPath(), `${name}.json`)
@@ -255,11 +273,6 @@ export const initIPCListeners = (mainWindow: BrowserWindow) => {
   ipcMain.handle('APP_STOP_SERVER', (event, environmentUUID: string) => {
     ServerInstance.stop(environmentUUID);
   });
-
-  ipcMain.handle(
-    'APP_NEW_STORAGE_MIGRATION',
-    async (event) => await migrateData()
-  );
 };
 
 /**
@@ -286,7 +299,7 @@ export const clearIPCChannels = () => {
  *
  * (This mock will be striped from the prod build by Webpack)
  */
-if (isTesting) {
+if (IS_TESTING) {
   createServer((req, res) => {
     const chunks: any[] = [];
 

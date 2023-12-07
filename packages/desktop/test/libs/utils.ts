@@ -1,12 +1,22 @@
 import {
   ChainablePromiseArray,
-  ChainablePromiseElement,
-  ElementArray
-} from 'webdriverio';
+  ChainablePromiseElement
+} from '@wdio/globals/node_modules/webdriverio';
 import { ToastTypes } from '../../src/renderer/app/models/toasts.model';
-import { Config } from '../../src/shared/config';
+import { SharedConfig } from '../../src/shared/shared-config';
+
+const Config = SharedConfig({ apiURL: '', websiteURL: '' });
 
 class Utils {
+  public async clearElementValue(
+    element: ChainablePromiseElement<WebdriverIO.Element>
+  ): Promise<void> {
+    // clearing by entering text and removing it as some validation directive does not react to 'change' event
+    await element.click();
+    await element.setValue(' ');
+    await browser.keys(['Backspace']);
+  }
+
   public async setElementValue(
     element: ChainablePromiseElement<WebdriverIO.Element>,
     value: string
@@ -14,6 +24,13 @@ class Utils {
     // ensure we unfocus previously selected fields (on Linux, using setValue, previous fields with typeaheads may still show the menu and not be immediately unfocused)
     await element.click();
     await element.setValue(value);
+  }
+
+  public async assertElementValue(
+    element: ChainablePromiseElement<WebdriverIO.Element>,
+    value: string
+  ): Promise<void> {
+    expect(await element.getValue()).toEqual(value);
   }
 
   public async assertHasClass(
@@ -28,6 +45,25 @@ class Utils {
     } else {
       expect(classes).toContain(className);
     }
+  }
+
+  public async setDropdownValue(dropdownId: string, index: number) {
+    await $(`#${dropdownId}-dropdown .dropdown-toggle`).click();
+    await $(
+      `#${dropdownId}-dropdown-menu .dropdown-item:nth-child(${index})`
+    ).click();
+  }
+
+  public async assertDropdownValue(
+    targetControlName: string,
+    expected: string
+  ) {
+    await this.assertElementText(
+      $(
+        `app-custom-select[formcontrolname="${targetControlName}"] .dropdown-toggle-label`
+      ),
+      expected
+    );
   }
 
   public async assertHasAttribute(
@@ -47,9 +83,12 @@ class Utils {
 
   public async assertElementText(
     element: ChainablePromiseElement<WebdriverIO.Element>,
-    text: string
+    text: string,
+    multiline = false
   ): Promise<void> {
-    expect(await element.getText()).toEqual(text);
+    expect(await element.getText()).toEqual(
+      multiline ? text.replace(/[ ]/g, '\n') : text
+    );
   }
 
   public async assertElementTextContain(
@@ -60,7 +99,7 @@ class Utils {
   }
 
   public async countElements(
-    elements: ChainablePromiseArray<ElementArray>,
+    elements: ChainablePromiseArray<WebdriverIO.ElementArray>,
     expected: number
   ) {
     expect((await elements).length).toEqual(expected);
@@ -151,6 +190,11 @@ class Utils {
     }
 
     return result;
+  }
+
+  public async closeTooltip() {
+    // close tooltips
+    await $('body').click({ x: 0, y: 0 });
   }
 }
 

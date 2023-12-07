@@ -1,9 +1,10 @@
 import { Header } from '@mockoon/commons';
-import { ChainablePromiseElement } from 'webdriverio';
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import utils from '../libs/utils';
 
 type HeaderLocations =
   | 'route-response-headers'
+  | 'response-callback-headers'
   | 'environment-headers'
   | 'env-proxy-req-headers'
   | 'env-proxy-res-headers';
@@ -74,9 +75,9 @@ class HeadersUtils {
     }
 
     for (const key in values) {
-      if (Object.prototype.hasOwnProperty(key)) {
-        expect(headers[key.toLowerCase()]).toEqual(values[key]);
-      }
+      expect(headers[key.toLowerCase()]).toEqual(
+        values[key] ? values[key].toLowerCase() : undefined
+      );
     }
   }
 

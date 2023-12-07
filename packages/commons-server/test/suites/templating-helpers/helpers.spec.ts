@@ -1,6 +1,6 @@
-import { faker } from '@faker-js/faker';
 import { expect } from 'chai';
 import { format as dateFormat } from 'date-fns';
+import { localFaker as faker } from '../../../src';
 import { TemplateParser } from '../../../src/libs/template-parser';
 
 faker.seed(1);
@@ -274,8 +274,62 @@ describe('Template parser', () => {
     });
   });
 
+  describe('Helper: getVar', () => {
+    it('should return empty if no var name provided', () => {
+      const parseResult = TemplateParser(
+        false,
+
+        "{{setVar 'testvar' 'testvalue'}}{{getVar}}",
+
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should get a variable from simple var name', () => {
+      const parseResult = TemplateParser(
+        false,
+
+        "{{setVar 'testvar' 'testvalue'}}{{getVar 'testvar'}}",
+
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('testvalue');
+    });
+
+    it('should get a variable from dynamically built var name', () => {
+      const parseResult = TemplateParser(
+        false,
+
+        "{{setVar 'testvar' 'testvalue'}}{{getVar (concat 'test' 'var')}}",
+
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('testvalue');
+    });
+
+    it('should get a variable from dynamically built var name', () => {
+      const parseResult = TemplateParser(
+        false,
+
+        "{{setVar 'testvar' 'testvalue'}}{{getVar (bodyRaw 'prop1')}}",
+
+        {} as any,
+        [],
+        { body: { prop1: 'testvar' } } as any
+      );
+      expect(parseResult).to.be.equal('testvalue');
+    });
+  });
+
   describe('Helper: date', () => {
-    it('Should return an empty string if given the wrong amount of arguments', () => {
+    it('should return an empty string if given the wrong amount of arguments', () => {
       const parseResult = TemplateParser(
         false,
         '{{date}}',
@@ -286,7 +340,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('');
     });
 
-    it('Should return an empty string if given the wrong amount of arguments', () => {
+    it('should return an empty string if given the wrong amount of arguments', () => {
       const parseResult = TemplateParser(
         false,
         "{{date '2022-01-01'}}",
@@ -298,7 +352,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('');
     });
 
-    it('Should return a date using a the default format', () => {
+    it('should return a date using a the default format', () => {
       const parseResult = TemplateParser(
         false,
         "{{date '2022-01-01' '2022-02-01' 'YYYY'}}",
@@ -310,7 +364,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('2022');
     });
 
-    it('Should return a date using a given format', () => {
+    it('should return a date using a given format', () => {
       const parseResult = TemplateParser(
         false,
         "{{date '2022-02-01' '2022-02-01' 'yyyy-MM-dd'}}",
@@ -322,7 +376,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('2022-02-01');
     });
 
-    it('Should return a date when using queryParams', () => {
+    it('should return a date when using queryParams', () => {
       const parseResult = TemplateParser(
         false,
         "{{date (queryParam 'dateFrom') (queryParam 'dateTo') 'YYYY'}}",
@@ -336,12 +390,61 @@ describe('Template parser', () => {
         {} as any
       );
 
+      expect(parseResult).to.be.equal('2023');
+    });
+  });
+
+  describe('Helper: dateFormat', () => {
+    it('should return an empty string if given the wrong amount of arguments', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{dateFormat}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return an empty string if given the wrong amount of arguments', () => {
+      const parseResult = TemplateParser(
+        false,
+        "{{dateFormat '2022-01-01'}}",
+        {} as any,
+        [],
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return a date using a given format', () => {
+      const parseResult = TemplateParser(
+        false,
+        "{{dateFormat '2022-02-01' 'YYYY'}}",
+        {} as any,
+        [],
+        {} as any
+      );
+
       expect(parseResult).to.be.equal('2022');
+    });
+
+    it('should return a date using a given format, when a Date object is passed as a param', () => {
+      const parseResult = TemplateParser(
+        false,
+        "{{dateFormat (faker 'date.recent' 1) 'YYYY'}}",
+        {} as any,
+        [],
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('2023');
     });
   });
 
   describe('Helper: dateTimeShift', () => {
-    it('Should not throw an error when passed with invalid parameters.', () => {
+    it('should not throw an error when passed with invalid parameters.', () => {
       const parseResult = TemplateParser(
         false,
         '{{dateTimeShift 1}}',
@@ -356,7 +459,7 @@ describe('Template parser', () => {
       expect(parseResult).to.match(new RegExp(dateString + '.*'));
     });
 
-    it('Should return a date shifted the specified amount of days from now.', () => {
+    it('should return a date shifted the specified amount of days from now.', () => {
       const parseResult = TemplateParser(
         false,
         '{{dateTimeShift days=2}}',
@@ -372,7 +475,7 @@ describe('Template parser', () => {
       expect(parseResult).to.match(new RegExp(dateString + '.*'));
     });
 
-    it('Should return a date shifted by the requested amount from a specified start date.', () => {
+    it('should return a date shifted by the requested amount from a specified start date.', () => {
       const parseResult = TemplateParser(
         false,
         "{{dateTimeShift date='2021-02-01' days=2 months=4}}",
@@ -384,7 +487,7 @@ describe('Template parser', () => {
       expect(parseResult).to.match(/2021-06-03.*/);
     });
 
-    it('Should return a date shifted by the requested amount from the specified start date in the specified format.', () => {
+    it('should return a date shifted by the requested amount from the specified start date in the specified format.', () => {
       const parseResult = TemplateParser(
         false,
         "{{dateTimeShift date='2021-02-01' format='yyyy-MM-dd' days=2 months=4}}",
@@ -396,7 +499,7 @@ describe('Template parser', () => {
       expect(parseResult).to.equals('2021-06-03');
     });
 
-    it('Should return a date time shifted by the requested amount from the specified start date in the specified format.', () => {
+    it('should return a date time shifted by the requested amount from the specified start date in the specified format.', () => {
       const parseResult = TemplateParser(
         false,
         "{{dateTimeShift date='2021-02-01T10:45:00' format=\"yyyy-MM-dd'T'HH:mm:ss\" days=8 months=3 hours=1 minutes=2 seconds=3}}",
@@ -408,7 +511,7 @@ describe('Template parser', () => {
       expect(parseResult).to.equals('2021-05-09T11:47:03');
     });
 
-    it('Should return a date time shifted by the requested amount when another helper is used as the date source (safestring).', () => {
+    it('should return a date time shifted by the requested amount when another helper is used as the date source (safestring).', () => {
       const parseResult = TemplateParser(
         false,
         "{{dateTimeShift date=(queryParam 'date') format=\"yyyy-MM-dd'T'HH:mm:ss\" hours=1}}",
@@ -420,7 +523,7 @@ describe('Template parser', () => {
       expect(parseResult).to.equals('2021-01-01T06:00:00');
     });
 
-    it('Should return a date time shifted by the requested amount when another helper is used as the date and months and days source (safestring).', () => {
+    it('should return a date time shifted by the requested amount when another helper is used as the date and months and days source (safestring).', () => {
       const parseResult = TemplateParser(
         false,
         "{{dateTimeShift date=(queryParam 'date') format=\"yyyy-MM-dd\" days=(queryParam 'days') months=(queryParam 'months')}}",
@@ -532,7 +635,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('data');
     });
 
-    it('Should work correctly when variables are passed as parameters as numbers', () => {
+    it('should work correctly when variables are passed as parameters as numbers', () => {
       const parseResult = TemplateParser(
         false,
         "{{setVar 'testvar' 'testdata'}}{{setVar 'from' 4}}{{setVar 'length' 4}}{{substr @testvar @from @length}}",
@@ -544,7 +647,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('data');
     });
 
-    it('Should work correctly when variables are passed as parameters as strings', () => {
+    it('should work correctly when variables are passed as parameters as strings', () => {
       const parseResult = TemplateParser(
         false,
         "{{setVar 'testvar' 'testdata'}}{{setVar 'from' '4'}}{{setVar 'length' '4'}}{{substr @testvar @from @length}}",
@@ -556,7 +659,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('data');
     });
 
-    it('Should work correctly when other helpers are used for parameters as numbers', () => {
+    it('should work correctly when other helpers are used for parameters as numbers', () => {
       const parseResult = TemplateParser(
         false,
         "{{substr (body 'prop1') (body 'prop2') (body 'prop3')}}",
@@ -568,7 +671,7 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('data');
     });
 
-    it('Should work correctly when other helpers are used for parameters as strings', () => {
+    it('should work correctly when other helpers are used for parameters as strings', () => {
       const parseResult = TemplateParser(
         false,
         "{{substr (body 'prop1') (body 'prop2') (body 'prop3')}}",
@@ -1968,6 +2071,39 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('true');
     });
+
+    it('should return false if first number is number and second is string', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{eq 1 "1"}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return true if first value is string equal to second string', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{eq "v1" "v1"}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if first value is string and not equal to second string', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{eq "v1" "v11"}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('false');
+    });
   });
 
   describe('Helper: stringify', () => {
@@ -1989,6 +2125,268 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal(`{
   "data": "super"
 }`);
+    });
+  });
+
+  describe('Helper: padStart', () => {
+    it('should return empty string if no param provided', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padStart}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return string as is if no length and no padchar', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padStart (bodyRaw "prop1")}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('123');
+    });
+
+    it('should return string padded with spaces if no padchar', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padStart (bodyRaw "prop1") 10}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('       123');
+    });
+
+    it('should return string padded with chosen char', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padStart (bodyRaw "prop1") 10 "*"}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('*******123');
+    });
+  });
+
+  describe('Helper: padEnd', () => {
+    it('should return empty string if no param provided', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padEnd}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return string as is if no length and no padchar', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padEnd (bodyRaw "prop1")}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('123');
+    });
+
+    it('should return string padded with spaces if no padchar', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padEnd (bodyRaw "prop1") 10}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('123       ');
+    });
+
+    it('should return string padded with chosen char', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{padEnd (bodyRaw "prop1") 10 "*"}}',
+        {} as any,
+        [],
+        {
+          body: {
+            prop1: '123'
+          }
+        } as any
+      );
+      expect(parseResult).to.be.equal('123*******');
+    });
+  });
+
+  describe('Helper: oneOf', () => {
+    it('should return empty string if no param provided', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{oneOf}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return empty string if first param is not an array', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{oneOf true}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return a stringified object if choses from array of object and stringify is true', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{oneOf (dataRaw "abc1") true}}',
+        {} as any,
+        [
+          {
+            id: 'abc1',
+            name: 'db1',
+            parsed: true,
+            value: [{ id: 1, value: 'value1' }]
+          }
+        ],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('{"id":1,"value":"value1"}');
+    });
+
+    it('should return an [object Object] string if choses from array of object and stringify is false', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{oneOf (dataRaw "abc1")}}',
+        {} as any,
+        [
+          {
+            id: 'abc1',
+            name: 'db1',
+            parsed: true,
+            value: [{ id: 1, value: 'value1' }]
+          }
+        ],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('[object Object]');
+    });
+  });
+
+  describe('Helper: object', () => {
+    it('should return an empty object if empty object passed', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{ stringify (object) }}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal('{}');
+    });
+
+    it('should return valid key=value object if key=value passed', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{{ stringify (object key="value") }}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal(
+        JSON.stringify({ key: 'value' }, null, 2)
+      );
+    });
+
+    it('should return valid multiple keys object if multiple keys passed', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{{ stringify (object key="value" secondKey="secondValue" numericKey=5) }}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal(
+        JSON.stringify(
+          {
+            numericKey: 5,
+            secondKey: 'secondValue',
+            key: 'value'
+          },
+          null,
+          2
+        )
+      );
+    });
+  });
+
+  describe('Helper: filter', () => {
+    it('should return correctly filtered array with primitives OR condition', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{ stringify (filter (array 1 2 3 4 true false) 3 1 true) }}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal(JSON.stringify([1, 3, true], null, 2));
+    });
+
+    it('should return correctly filtered array with mixed data OR condition', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{{ stringify (filter (array (object key="value") 2 3) (object key="value") 3) }}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal(
+        JSON.stringify([{ key: 'value' }, 3], null, 2)
+      );
+    });
+
+    it('should return correctly filtered array with mixed AND condition', () => {
+      const parseResult = TemplateParser(
+        false,
+        '{{{ stringify (filter (array (object a="a1" b="b2") (object a="a1" b="b1") 2 3) (object a="a1" b="b1") 3) }}}',
+        {} as any,
+        [],
+        {} as any
+      );
+      expect(parseResult).to.be.equal(
+        JSON.stringify([{ b: 'b1', a: 'a1' }, 3], null, 2)
+      );
     });
   });
 });

@@ -1,9 +1,9 @@
 {
   "uuid": "c6199444-5116-490a-99a2-074876253a4a",
-  "lastMigration": 23,
+  "lastMigration": 27,
   "name": "Test env",
   "port": 3000,
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "endpointPrefix": "",
   "latency": 0,
   "routes": [
@@ -26,6 +26,70 @@
           "disableTemplating": false,
           "fallbackTo404": false,
           "body": "{}",
+          "default": true,
+          "databucketID": "",
+          "bodyType": "INLINE"
+        }
+      ],
+      "enabled": true,
+      "responseMode": null,
+      "type": "http"
+    },
+    {
+      "uuid": "1d4dff08-def4-41eb-bebd-d6f3c670618e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "test2",
+      "responses": [
+        {
+          "uuid": "58c5bd0d-97ca-4552-9087-1024fa54f1e8",
+          "body": "{\n  \"route\": \"test2\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "a8a4e784-4fdf-497f-8915-774c4aa70205",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "file",
+      "responses": [
+        {
+          "uuid": "fc17ddee-340e-4fc5-ab05-7c0b0ab526ff",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "FILE",
+          "filePath": "./test/data/test.data",
+          "databucketID": "",
+          "sendFileAsBody": true,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
           "default": true
         }
       ],
@@ -54,5 +118,20 @@
     "caPath": "",
     "passphrase": ""
   },
-  "data": []
+  "data": [],
+  "folders": [],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "85e236c4-decc-467c-b288-d243181a250f"
+    },
+    {
+      "type": "route",
+      "uuid": "1d4dff08-def4-41eb-bebd-d6f3c670618e"
+    },
+    {
+      "type": "route",
+      "uuid": "a8a4e784-4fdf-497f-8915-774c4aa70205"
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "uuid": "323a25c6-b196-4d27-baf8-8aeb83d87c76",
-  "lastMigration": 24,
+  "lastMigration": 32,
   "name": "FT env",
   "endpointPrefix": "",
   "latency": 0,
@@ -11,7 +11,6 @@
       "method": "post",
       "endpoint": "dolphins",
       "documentation": "",
-      "enabled": true,
       "responses": [
         {
           "uuid": "6d3abb6f-6705-4588-8b09-337ddc4ae33c",
@@ -28,17 +27,19 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "e929ed63-9c47-4ef0-9192-894de0a104ea",
       "method": "get",
       "endpoint": "very/long/endpoint/path/that/will/be/truncated/in/the/menu",
       "documentation": "",
-      "enabled": true,
       "responses": [
         {
           "uuid": "34eb3510-2886-434a-acb8-4542d67739da",
@@ -55,10 +56,13 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     }
   ],
   "proxyMode": false,
@@ -68,7 +72,7 @@
   "proxyReqHeaders": [{ "key": "", "value": "" }],
   "proxyResHeaders": [{ "key": "", "value": "" }],
   "proxyRemovePrefix": false,
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "tlsOptions": {
     "enabled": false,
     "type": "CERT",
@@ -78,5 +82,11 @@
     "caPath": "",
     "passphrase": ""
   },
-  "data": []
+  "data": [],
+  "folders": [],
+  "rootChildren": [
+    { "type": "route", "uuid": "9eec44ab-48b1-454f-8cda-ddbc9aeaac0e" },
+    { "type": "route", "uuid": "e929ed63-9c47-4ef0-9192-894de0a104ea" }
+  ],
+  "callbacks": []
 }

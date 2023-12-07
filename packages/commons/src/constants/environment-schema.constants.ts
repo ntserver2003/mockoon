@@ -1,33 +1,38 @@
 import * as Joi from 'joi';
-import { v4 as uuid } from 'uuid';
 import { HighestMigrationId } from '../libs/migrations';
-import { GenerateDatabucketID } from '../libs/utils';
 import {
+  Callback,
   DataBucket,
   Environment,
   EnvironmentTLSOptions
 } from '../models/environment.model';
+import { Folder, FolderChild } from '../models/folder.model';
 import {
   BodyTypes,
+  CallbackInvocation,
   Header,
   Methods,
   ResponseMode,
   ResponseRule,
   Route,
-  RouteResponse
+  RouteResponse,
+  RouteType
 } from '../models/route.model';
+import { GenerateUniqueID, generateUUID } from '../utils/utils';
 
 export const EnvironmentDefault: Environment = {
   get uuid() {
-    return uuid();
+    return generateUUID();
   },
   lastMigration: HighestMigrationId,
   name: 'New environment',
   endpointPrefix: '',
   latency: 0,
   port: 3000,
-  hostname: '0.0.0.0',
+  hostname: '',
+  folders: [],
   routes: [],
+  rootChildren: [],
   proxyMode: false,
   proxyHost: '',
   proxyRemovePrefix: false,
@@ -44,24 +49,33 @@ export const EnvironmentDefault: Environment = {
   headers: [],
   proxyReqHeaders: [],
   proxyResHeaders: [],
-  data: []
+  data: [],
+  callbacks: []
+};
+
+export const FolderDefault: Folder = {
+  get uuid() {
+    return generateUUID();
+  },
+  name: 'New folder',
+  children: []
 };
 
 export const RouteDefault: Route = {
   get uuid() {
-    return uuid();
+    return generateUUID();
   },
+  type: RouteType.HTTP,
   documentation: '',
   method: Methods.get,
   endpoint: '',
   responses: [],
-  enabled: true,
   responseMode: null
 };
 
 export const RouteResponseDefault: RouteResponse = {
   get uuid() {
-    return uuid();
+    return generateUUID();
   },
   body: '{}',
   latency: 0,
@@ -76,7 +90,33 @@ export const RouteResponseDefault: RouteResponse = {
   rulesOperator: 'OR',
   disableTemplating: false,
   fallbackTo404: false,
-  default: false
+  default: false,
+  crudKey: 'id',
+  callbacks: []
+};
+
+export const CallbackDefault: Callback = {
+  get uuid() {
+    return generateUUID();
+  },
+  get id() {
+    return GenerateUniqueID();
+  },
+  uri: '',
+  name: 'Callback',
+  documentation: '',
+  method: Methods.post,
+  headers: [],
+  bodyType: BodyTypes.INLINE,
+  body: '',
+  databucketID: '',
+  filePath: '',
+  sendFileAsBody: true
+};
+
+export const ResponseCallbackDefault: CallbackInvocation = {
+  uuid: '',
+  latency: 0
 };
 
 export const ResponseRuleDefault: ResponseRule = {
@@ -94,10 +134,10 @@ export const HeaderDefault: Header = {
 
 export const DataBucketDefault: DataBucket = {
   get uuid() {
-    return uuid();
+    return generateUUID();
   },
   get id() {
-    return GenerateDatabucketID();
+    return GenerateUniqueID();
   },
   name: 'New data',
   documentation: '',
@@ -106,7 +146,7 @@ export const DataBucketDefault: DataBucket = {
 
 const UUIDSchema = Joi.string()
   .uuid()
-  .failover(() => uuid())
+  .failover(() => generateUUID())
   .required();
 
 const HeaderSchema = Joi.object<Header, true>({
@@ -173,10 +213,67 @@ const RouteResponseRuleSchema = Joi.object<ResponseRule, true>({
   value: Joi.string().allow('').failover(ResponseRuleDefault.value).required(),
   invert: Joi.boolean().failover(ResponseRuleDefault.invert).required(),
   operator: Joi.string()
-    .valid('equals', 'regex', 'null', 'empty_array')
+    .valid('equals', 'regex', 'regex_i', 'null', 'empty_array')
     .failover(ResponseRuleDefault.operator)
     .required()
 });
+
+const CallbackSchema = Joi.object<Callback, true>({
+  uuid: UUIDSchema,
+  id: Joi.string().allow('').failover(CallbackDefault.id).required(),
+  name: Joi.string().default('').failover(CallbackDefault.name).required(),
+  documentation: Joi.string()
+    .allow('')
+    .failover(CallbackDefault.documentation)
+    .required(),
+  method: Joi.string()
+    .valid(
+      Methods.get,
+      Methods.post,
+      Methods.put,
+      Methods.patch,
+      Methods.delete,
+      Methods.head,
+      Methods.options,
+      Methods.propfind,
+      Methods.proppatch,
+      Methods.move,
+      Methods.copy,
+      Methods.mkcol,
+      Methods.lock,
+      Methods.unlock
+    )
+    .required(),
+  uri: Joi.string().allow('').failover(CallbackDefault.uri).required(),
+  headers: Joi.array()
+    .items(HeaderSchema, Joi.any().strip())
+    .failover(CallbackDefault.headers)
+    .required(),
+  body: Joi.string().allow('').failover(CallbackDefault.body).required(),
+  bodyType: Joi.string()
+    .valid(BodyTypes.INLINE, BodyTypes.DATABUCKET, BodyTypes.FILE)
+    .failover(CallbackDefault.bodyType)
+    .required(),
+  filePath: Joi.string()
+    .allow('')
+    .failover(CallbackDefault.filePath)
+    .required(),
+  sendFileAsBody: Joi.boolean()
+    .failover(CallbackDefault.sendFileAsBody)
+    .required(),
+  databucketID: Joi.string()
+    .allow('')
+    .failover(CallbackDefault.databucketID)
+    .required()
+})
+  .failover(EnvironmentDefault.callbacks)
+  .default(EnvironmentDefault.callbacks)
+  .options({ stripUnknown: true });
+
+const CallbackInvocationSchema = Joi.object<CallbackInvocation, true>({
+  uuid: UUIDSchema,
+  latency: Joi.number().default(0)
+}).options({ stripUnknown: true });
 
 const RouteResponseSchema = Joi.object<RouteResponse, true>({
   uuid: UUIDSchema,
@@ -224,24 +321,59 @@ const RouteResponseSchema = Joi.object<RouteResponse, true>({
   fallbackTo404: Joi.boolean()
     .failover(RouteResponseDefault.fallbackTo404)
     .required(),
-  default: Joi.boolean().failover(RouteResponseDefault.default).required()
+  default: Joi.boolean().failover(RouteResponseDefault.default).required(),
+  crudKey: Joi.string().failover(RouteResponseDefault.crudKey).required(),
+  callbacks: Joi.array()
+    .items(CallbackInvocationSchema, Joi.any().strip())
+    .failover(RouteResponseDefault.callbacks)
+    .required()
 });
+
+export const FolderChildSchema = Joi.object<FolderChild, true>({
+  type: Joi.string()
+    .valid('route', 'folder')
+    .required()
+    .options({ stripUnknown: true }),
+  uuid: UUIDSchema
+});
+
+export const FolderSchema = Joi.object<Folder, true>({
+  uuid: UUIDSchema,
+  name: Joi.string().allow('').failover(FolderDefault.name).required(),
+  children: Joi.array()
+    .items(FolderChildSchema, Joi.any().strip())
+    .failover(FolderDefault.children)
+    .required()
+}).options({ stripUnknown: true });
 
 export const RouteSchema = Joi.object<Route, true>({
   uuid: UUIDSchema,
+  type: Joi.string()
+    .valid(RouteType.HTTP, RouteType.CRUD)
+    .failover(RouteDefault.type)
+    .required(),
   documentation: Joi.string()
     .allow('')
     .failover(RouteDefault.documentation)
     .required(),
   method: Joi.string()
+    .allow('')
     .valid(
+      Methods.all,
       Methods.get,
       Methods.post,
       Methods.put,
       Methods.patch,
       Methods.delete,
       Methods.head,
-      Methods.options
+      Methods.options,
+      Methods.propfind,
+      Methods.proppatch,
+      Methods.move,
+      Methods.copy,
+      Methods.mkcol,
+      Methods.lock,
+      Methods.unlock
     )
     .failover(RouteDefault.method)
     .required(),
@@ -250,13 +382,13 @@ export const RouteSchema = Joi.object<Route, true>({
     .items(RouteResponseSchema, Joi.any().strip())
     .failover(RouteDefault.responses)
     .required(),
-  enabled: Joi.boolean().failover(RouteDefault.enabled).required(),
   responseMode: Joi.string()
     .allow(null)
     .valid(
       ResponseMode.RANDOM,
       ResponseMode.SEQUENTIAL,
-      ResponseMode.DISABLE_RULES
+      ResponseMode.DISABLE_RULES,
+      ResponseMode.FALLBACK
     )
     .failover(RouteDefault.responseMode)
     .required()
@@ -278,7 +410,18 @@ export const EnvironmentSchema = Joi.object<Environment, true>({
     .max(65535)
     .failover(EnvironmentDefault.port)
     .required(),
-  hostname: Joi.string().failover(EnvironmentDefault.hostname).required(),
+  hostname: Joi.string()
+    .allow('')
+    .failover(EnvironmentDefault.hostname)
+    .required(),
+  rootChildren: Joi.array()
+    .items(FolderChildSchema, Joi.any().strip())
+    .failover(EnvironmentDefault.rootChildren)
+    .required(),
+  folders: Joi.array()
+    .items(FolderSchema, Joi.any().strip())
+    .failover(EnvironmentDefault.folders)
+    .required(),
   routes: Joi.array()
     .items(RouteSchema, Joi.any().strip())
     .failover(EnvironmentDefault.routes)
@@ -308,6 +451,10 @@ export const EnvironmentSchema = Joi.object<Environment, true>({
   data: Joi.array()
     .items(DataSchema, Joi.any().strip())
     .failover(EnvironmentDefault.data)
+    .required(),
+  callbacks: Joi.array()
+    .items(CallbackSchema, Joi.any().strip())
+    .failover(EnvironmentDefault.callbacks)
     .required()
 })
   .failover(EnvironmentDefault)

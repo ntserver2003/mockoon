@@ -58,10 +58,10 @@ describe('Settings', () => {
       await navigation.switchView('ENV_ROUTES');
 
       await $(
-        '.routes-menu .nav.menu-list .nav-item:nth-child(2) .route-path.ellipsis'
+        '.routes-menu .nav.menu-list .nav-item:nth-child(2) .nav-link-label.text-truncate'
       ).waitForExist();
       await $(
-        '.environments-menu .nav.menu-list .nav-item:nth-child(1) .menu-subtitle.ellipsis'
+        '.environments-menu .nav.menu-list .nav-item:nth-child(1) .nav-link-subtitle.text-truncate'
       ).waitForExist();
     });
 
@@ -80,22 +80,22 @@ describe('Settings', () => {
 
     it('should not truncate environment and routes paths after setting update', async () => {
       await $(
-        '.routes-menu .nav.menu-list .nav-item:nth-child(2) .route-path.text-break'
+        '.routes-menu .nav.menu-list .nav-item:nth-child(2) .nav-link-label.text-break'
       ).waitForExist();
       await $(
-        '.environments-menu .nav.menu-list .nav-item:nth-child(1) .menu-subtitle.text-break'
+        '.environments-menu .nav.menu-list .nav-item:nth-child(1) .nav-link-subtitle.text-break'
       ).waitForExist();
 
       // remove prefix for following tests
       await navigation.switchView('ENV_SETTINGS');
-      await environmentsSettings.setSettingValue('endpointPrefix', '');
+      await environmentsSettings.clearSettingValue('endpointPrefix');
     });
   });
 
   describe('Environment log entries maximum', () => {
     it('should modify the limit and verify the settings file', async () => {
       await settings.open();
-      await settings.setSettingValue('settings-log-max-count', '000');
+      await settings.setSettingValue('settings-log-max-count', '1000');
       await modals.close();
 
       await utils.waitForAutosave();
@@ -130,8 +130,7 @@ describe('Settings', () => {
 
     it('should set log body size to 100', async () => {
       await settings.open();
-      // add to zeros to the default value '1' (setValue is doing a reset too)
-      await settings.setSettingValue('settings-log-body-size', '00');
+      await settings.setSettingValue('settings-log-body-size', '100');
       await modals.close();
 
       await utils.waitForAutosave();
@@ -165,7 +164,7 @@ describe('Settings', () => {
 
     it('should set log body size to 1000', async () => {
       await settings.open();
-      await settings.setSettingValue('settings-log-body-size', '000');
+      await settings.setSettingValue('settings-log-body-size', '1000');
       await modals.close();
 
       await utils.waitForAutosave();
@@ -218,7 +217,7 @@ describe('Settings', () => {
     it('should change Faker.js settings and verify persistence', async () => {
       await settings.open();
       await settings.setSettingValue('settings-faker-seed', '1234');
-      await settings.selectSettingValue('settings-faker-locale', 'en_US');
+      await settings.setDropdownSettingValue('settings-faker-locale', 22);
 
       await modals.close();
 
@@ -268,6 +267,21 @@ describe('Settings', () => {
         await fs.readFile('./tmp/storage/settings.json')
       ).toString();
       expect(fileContent).toMatch(new RegExp('^{"'));
+    });
+  });
+
+  describe('Enable starts environments on application load', () => {
+    it('Should save setting to enable starts environments on load', async () => {
+      await settings.open();
+      await settings.toggleSetting('start-environments-on-load');
+      await modals.close();
+
+      await utils.waitForAutosave();
+      await file.verifyObjectPropertyInFile(
+        './tmp/storage/settings.json',
+        'startEnvironmentsOnLoad',
+        true
+      );
     });
   });
 });

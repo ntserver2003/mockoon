@@ -4,9 +4,9 @@
   </a>
   <br>
   <a href="https://mockoon.com/"><img src="https://img.shields.io/badge/Website-Go-green.svg?style=flat-square&colorB=1997c6"/></a>
-  <a href="http://eepurl.com/dskB2X"><img src="https://img.shields.io/badge/Newsletter-Subscribe-green.svg?style=flat-square"/></a>
+  <a href="https://mockoon.com/newsletter/"><img src="https://img.shields.io/badge/Newsletter-Subscribe-green.svg?style=flat-square"/></a>
   <a href="https://twitter.com/GetMockoon"><img src="https://img.shields.io/badge/Twitter_@GetMockoon-follow-blue.svg?style=flat-square&colorB=1da1f2"/></a>
-  <a href="https://discord.gg/MutRpsY5gE"><img src="https://img.shields.io/badge/Discord-go-blue.svg?style=flat-square&colorA=6c84d9&colorB=1da1f2"/></a>
+  <a href="https://discord.gg/FtJjkejKGp"><img src="https://img.shields.io/badge/Discord-go-blue.svg?style=flat-square&colorA=6c84d9&colorB=1da1f2"/></a>
   <br>
   <br>
   <h1>Mockoon: awesome API mocking</h1>
@@ -19,7 +19,7 @@ It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you w
 ➡️ [Download](https://github.com/ntserver2003/mockoon/releases/latest/)
 
 <div align="center">
-  <img width="50%" src="https://mockoon.com/images/repo-illustration.png">
+  <img width="50%" src="https://mockoon.com/images/hero-repo.png">
 </div>
 
 ## Fork differences
@@ -27,7 +27,7 @@ It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you w
 Additional features:
 
 - [Handlebars Partials](https://handlebarsjs.com/guide/partials.html#partials) support 
-- `substring`, `replace` helpers
+- `replace` helper
 
 ## Features
 
@@ -46,10 +46,48 @@ You can check the [complete list](https://mockoon.com/features/) on the website.
 
 ---
 
-## Our platinum sponsor
+## Our sponsors
+
+### Platinum
 
 <div align="center" style="margin-top:20px;margin-bottom:20px;">
-<a href="https://appwrite.io/"><img src="https://mockoon.com/images/sponsors/appwrite-300.png" width="300" alt="Appwrite logo" /></a>
+  <a href="https://github.blog/2023-04-12-github-accelerator-our-first-cohort-and-whats-next/">
+      <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://mockoon.com/images/sponsors/light/github.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://mockoon.com/images/sponsors/github.png">
+      <img src="https://mockoon.com/images/sponsors/light/github.png" alt="GitHub logo" />
+      </picture>
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://localazy.com/register?ref=a9CiDC61gOac-azO">
+      <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://mockoon.com/images/sponsors/light/localazy.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://mockoon.com/images/sponsors/localazy.png">
+      <img src="https://mockoon.com/images/sponsors/light/localazy.png" alt="Localazy logo" />
+      </picture>
+  </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.peakcrypto.com/">
+      <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://mockoon.com/images/sponsors/light/peakcrypto.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://mockoon.com/images/sponsors/peakcrypto.png">
+      <img src="https://mockoon.com/images/sponsors/light/peakcrypto.png" alt="Peakcrypto logo" />
+      </picture>
+  </a>
+</div>
+
+### Gold
+
+<div align="center" style="margin-top:20px;margin-bottom:20px;">  
+  <a href="https://www.devmark.ai/fern/?utm_source=mockoon&utm_loc=readme&utm_type=logo">  
+      <img src="https://mockoon.com/images/sponsors/fern.png" alt="Fern logo" />
+  </a>
+</div>
+
+### Silver
+
+<div align="center" style="margin-top:20px;margin-bottom:20px;">  
+  <a href="https://www.emqx.io/">  
+      <img src="https://mockoon.com/images/sponsors/emqx.png" alt="Peakcrypto logo" />
+  </a>
 </div>
 
 Mockoon is an open-source project built by volunteer maintainers. If you like our application, please consider sponsoring us and join all the [Sponsors and Backers](https://github.com/mockoon/mockoon/blob/main/backers.md) who helped this project over time!
@@ -81,7 +119,27 @@ Linux:
 
 ## Install the CLI
 
-Mockoon CLI is available as an [NPM package](https://www.npmjs.com/package/@mockoon/cli). Please look at our [dedicated documentation](https://github.com/mockoon/mockoon/blob/main/packages/cli) to learn how to install and use it.
+Mockoon CLI is available as an [NPM package](https://www.npmjs.com/package/@mockoon/cli). Please check our [dedicated documentation](https://github.com/mockoon/mockoon/blob/main/packages/cli/README.md) to learn how to install and use it.
+
+## Use in cloud functions and serverless environments
+
+Mockoon's Serverless [NPM package](https://www.npmjs.com/package/@mockoon/serverless) provides an easy way to run Mockoon's mock APIs in cloud functions and serverless environments: AWS Lambda, GCP Functions, Firebase Functions, etc.
+
+Please check our [dedicated documentation](https://github.com/mockoon/mockoon/blob/main/packages/serverless/README.md) to learn how to use it.
+
+## Subscribe to Mockoon Pro
+
+With advanced features for solo developers and teams, Mockoon Pro supercharges your API development:
+
+- 🤖 [AI powered API mocking](https://mockoon.com/ai-powered-api-mocking/)
+- 📃 Access to dozens of [ready to use JSON templates](https://mockoon.com/templates/).
+- 💬 Priority support and training.
+
+Upgrade today and take your API development to the next level.
+
+<div align="center" style="margin-top:20px;margin-bottom:20px;">
+<a href="https://mockoon.com/pro/"><img src="https://mockoon.com/images/pro-btn.png?" width="250" alt="pro button" /></a>
+</div>
 
 ## Mockoon's documentation
 
@@ -89,11 +147,11 @@ You will find Mockoon's [documentation](https://mockoon.com/docs/latest) on the 
 
 ## Changelogs
 
-You will find Mockoon [desktop](https://mockoon.com/releases/desktop/) and [CLI](https://mockoon.com/releases/cli/) changelogs on the official website.
+You will find Mockoon applications [changelogs](https://mockoon.com/releases/) on the official website.
 
 ## Support/feedback
 
-You can discuss all things related to Mockoon, and ask for help, on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/MutRpsY5gE).
+You can discuss all things related to Mockoon, and ask for help, on the [official community](https://github.com/mockoon/mockoon/discussions). It's also a good place to discuss bugs and feature requests before opening an issue on this repository. For more chat-like discussions, you can also join our [Discord server](https://discord.gg/FtJjkejKGp).
 
 ## Contributing
 
@@ -103,6 +161,6 @@ Please also take a look at our [Code of Conduct](https://github.com/mockoon/mock
 
 ## Roadmap
 
-If you want to know what will be coming in the next release you can check the global [Roadmap](https://github.com/orgs/mockoon/projects/2).
+If you want to know what will be coming in the next release you can check the global [Roadmap](https://mockoon.com/public-roadmap/).
 
-New releases will be announced on Mockoon's [Twitter account @GetMockoon](https://twitter.com/GetMockoon) and through the newsletter to which you can subscribe [here](http://eepurl.com/dskB2X).
+New releases will be announced on Mockoon's [Twitter account @GetMockoon](https://twitter.com/GetMockoon) and through the newsletter to which you can subscribe [here](https://mockoon.com/newsletter/).

@@ -22,7 +22,6 @@ export const EnvironmentsContextMenu = (
     },
     label: 'Copy configuration to clipboard (JSON)',
     icon: 'assignment',
-    separator: true,
     disabled: false
   },
   {
@@ -31,9 +30,18 @@ export const EnvironmentsContextMenu = (
       action: 'showInFolder',
       subjectUUID: environmentUUID
     },
-    label: 'Show in folder',
+    label: 'Show data file in explorer/finder',
     icon: 'folder',
-    separator: true,
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'environment',
+      action: 'move',
+      subjectUUID: environmentUUID
+    },
+    label: 'Move data file to folder',
+    icon: 'folder_move',
     disabled: false
   },
   {
@@ -48,15 +56,65 @@ export const EnvironmentsContextMenu = (
   }
 ];
 
+export const FoldersContextMenu = (folderUUID: string): ContextMenuItem[] => [
+  {
+    payload: {
+      subject: 'folder',
+      action: 'add_crud_route',
+      subjectUUID: folderUUID
+    },
+    label: 'Add CRUD route',
+    icon: 'endpoints',
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'folder',
+      action: 'add_http_route',
+      subjectUUID: folderUUID
+    },
+    label: 'Add HTTP route',
+    icon: 'endpoint',
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'folder',
+      action: 'add_folder',
+      subjectUUID: folderUUID
+    },
+    label: 'Add folder',
+    icon: 'folder',
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'folder',
+      action: 'delete',
+      subjectUUID: folderUUID
+    },
+    label: 'Delete folder',
+    icon: 'delete',
+    confirm: {
+      icon: 'error',
+      label: 'Confirm deletion'
+    },
+    confirmColor: 'text-danger',
+    disabled: false
+  }
+];
+
 export const RoutesContextMenu = (
   routeUUID: string,
+  parentId: string,
   environments: Environments
 ): ContextMenuItem[] => [
   {
     payload: {
       subject: 'route',
       action: 'duplicate',
-      subjectUUID: routeUUID
+      subjectUUID: routeUUID,
+      parentId
     },
     label: 'Duplicate',
     icon: 'content_copy',
@@ -158,6 +216,47 @@ export const DatabucketsContextMenu = (
       subject: 'databucket',
       action: 'delete',
       subjectUUID: databucketUUID
+    },
+    label: 'Delete',
+    icon: 'delete',
+    confirm: {
+      icon: 'error',
+      label: 'Confirm deletion'
+    },
+    confirmColor: 'text-danger',
+    disabled: false
+  }
+];
+
+export const CallbacksContextMenu = (
+  callbackUUID: string,
+  environments: Environments
+): ContextMenuItem[] => [
+  {
+    payload: {
+      subject: 'callback',
+      action: 'duplicate',
+      subjectUUID: callbackUUID
+    },
+    label: 'Duplicate',
+    icon: 'content_copy',
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'callback',
+      action: 'duplicateToEnv',
+      subjectUUID: callbackUUID
+    },
+    label: 'Duplicate to environment',
+    icon: 'input',
+    disabled: environments.length <= 1
+  },
+  {
+    payload: {
+      subject: 'callback',
+      action: 'delete',
+      subjectUUID: callbackUUID
     },
     label: 'Delete',
     icon: 'delete',

@@ -31,7 +31,10 @@ export class InputNumberDirective implements ControlValueAccessor {
   public onChange: (_: any) => void;
   public onTouched: (_: any) => void;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef) {}
+  constructor(
+    private renderer: Renderer2,
+    private elementRef: ElementRef
+  ) {}
 
   /**
    * Prevent some characters usually accepted in an input[type=number]
@@ -47,7 +50,6 @@ export class InputNumberDirective implements ControlValueAccessor {
    * Handle values entered in the input field
    */
   @HostListener('input', ['$event.target.value'])
-  @HostListener('change', ['$event.target.value'])
   public handleInput(inputValue: string): void {
     const sanitizedValue = this.sanitize(inputValue);
 

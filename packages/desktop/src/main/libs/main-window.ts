@@ -5,9 +5,10 @@ import { argv } from 'process';
 import { parseProtocolArgs } from 'src/main/libs/custom-protocol';
 import { createMenu } from 'src/main/libs/menu';
 import { createSplashScreen } from 'src/main/libs/splashscreen';
+import { checkForUpdate } from 'src/main/libs/update';
 
-declare const isTesting: boolean;
-declare const isDev: boolean;
+declare const IS_TESTING: boolean;
+declare const IS_DEV: boolean;
 
 // store URL received in open-url event when app is closed (macos only)
 let openUrlArgs: string[];
@@ -31,7 +32,7 @@ export const initMainWindow = () => {
   let splashScreen: BrowserWindow;
 
   // only show the splashscreen when not running the tests
-  if (!isTesting) {
+  if (!IS_TESTING) {
     splashScreen = createSplashScreen();
   }
 
@@ -59,11 +60,20 @@ export const initMainWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      devTools: isDev ? true : false,
+      devTools: IS_DEV ? true : false,
       spellcheck: false,
       preload: pathJoin(__dirname, '/preload.js')
     }
   });
+
+  // maximize before showing the window to avoid a resize event on start (this may break the menu size setting restore)
+  if (mainWindowState.isMaximized) {
+    mainWindow.maximize();
+  }
+
+  if (IS_DEV) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // when main app finished loading, hide splashscreen and show the mainWindow
   mainWindow.webContents.on('dom-ready', () => {
@@ -76,9 +86,7 @@ export const initMainWindow = () => {
       setTimeout(() => {
         showMainWindow(mainWindowState);
 
-        if (isDev) {
-          mainWindow.webContents.openDevTools();
-        }
+        checkForUpdate(mainWindow);
       }, 100);
     }, 500);
   });
@@ -86,13 +94,11 @@ export const initMainWindow = () => {
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/renderer/index.html`);
 
-  // intercept all links and open in a new window
-  mainWindow.webContents.on('new-window', (event, targetUrl) => {
-    event.preventDefault();
+  // open all links in external browser
+  mainWindow.webContents.setWindowOpenHandler((data) => {
+    shell.openExternal(data.url);
 
-    if (targetUrl.includes('openexternal::')) {
-      shell.openExternal(targetUrl.split('::')[1]);
-    }
+    return { action: 'deny' };
   });
 
   Menu.setApplicationMenu(createMenu(mainWindow));

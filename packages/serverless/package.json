@@ -1,0 +1,51 @@
+{
+  "name": "@mockoon/serverless",
+  "description": "Mockoon's serverless library. Use Mockoon in serverless environments: AWS Lambda, GCP Functions, Firebase Functions, etc.",
+  "version": "6.0.1",
+  "author": {
+    "name": "Guillaume Monnet",
+    "email": "guillaume@1kb.software",
+    "url": "https://1kb.software/"
+  },
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
+    "test": "ts-mocha -p ./tsconfig-build-cjs.json --timeout 10000 --forbid-only \"./test/suites/**/*.spec.ts\"",
+    "build": "tsc -p tsconfig-build.json && tsc -p tsconfig-build-cjs.json"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "https://github.com/mockoon/mockoon",
+  "homepage": "https://mockoon.com",
+  "bugs": {
+    "url": "https://github.com/mockoon/mockoon/issues"
+  },
+  "funding": "https://mockoon.com/sponsor-us/",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@mockoon/commons": "6.0.1",
+    "@mockoon/commons-server": "6.0.1",
+    "serverless-http": "3.2.0"
+  },
+  "devDependencies": {
+    "@types/chai": "4.3.6",
+    "@types/mocha": "10.0.2",
+    "@types/node": "20.7.1",
+    "@typescript-eslint/eslint-plugin": "6.7.3",
+    "@typescript-eslint/parser": "6.7.3",
+    "chai": "4.3.10",
+    "eslint": "8.50.0",
+    "eslint-plugin-jsdoc": "46.8.2",
+    "mocha": "10.2.0",
+    "ts-mocha": "10.0.0",
+    "typescript": "5.2.2"
+  }
+}

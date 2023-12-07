@@ -61,6 +61,11 @@ const get404Call: HttpCall = {
   }
 };
 
+const get404CallWithParentheses: HttpCall = {
+  ...get404Call,
+  path: '/test(data)'
+};
+
 const getDisabledProxyCall: HttpCall = {
   description: 'Call GET disabled proxy',
   protocol: 'https',
@@ -69,11 +74,11 @@ const getDisabledProxyCall: HttpCall = {
 };
 
 const externalCall: HttpCall = {
-  description: 'Call GET /about/ on Mockoon website',
+  description: 'Call GET /health on external API',
   protocol: 'https',
-  path: '/about/',
+  path: '/health',
   method: 'GET',
-  testedResponse: { status: 200, body: { contains: 'Meet the team' } }
+  testedResponse: { status: 200, body: { contains: 'ok' } }
 };
 
 describe('Proxy (with TLS and proxy headers)', () => {
@@ -82,6 +87,7 @@ describe('Proxy (with TLS and proxy headers)', () => {
     await environments.open('proxy-2');
     await environments.open('proxy-3');
     await environments.open('proxy-4');
+    await environments.open('proxy-5-external');
   });
 
   it('should add environment headers and proxy headers', async () => {
@@ -125,6 +131,8 @@ describe('Proxy (with TLS and proxy headers)', () => {
 
   it('should start environments', async () => {
     await environments.select(1);
+    await environments.start();
+    await environments.select(5);
     await environments.start();
     await environments.select(2);
     await environments.start();
@@ -242,5 +250,19 @@ describe('Proxy (with TLS and proxy headers)', () => {
     await environments.restart();
 
     await http.assertCallWithPort(getDoublePrefixedAnswerCall, 3003);
+  });
+
+  it('should test the escaping of parantheses in the route path', async () => {
+    await environments.select(2);
+    await navigation.switchView('ENV_LOGS');
+    await http.assertCallWithPort(get404CallWithParentheses, 3001);
+    await environmentsLogs.clickMockButton(1);
+    await routes.assertPath('test\\(data\\)');
+
+    // make sure that the call is not proxied anymore
+    await environments.restart();
+    await navigation.switchView('ENV_LOGS');
+    await http.assertCallWithPort(get404CallWithParentheses, 3001);
+    await environmentsLogs.assertLogMenuIcon(1, 'PROXY', true);
   });
 });

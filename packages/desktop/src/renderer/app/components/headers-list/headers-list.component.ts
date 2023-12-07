@@ -7,13 +7,16 @@ import {
   OnInit,
   Output
 } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
-import { Environment, Header, RouteResponse } from '@mockoon/commons';
+import {
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormGroup
+} from '@angular/forms';
+import { Callback, Environment, Header, RouteResponse } from '@mockoon/commons';
 import { Observable, Subject } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
-  distinctUntilKeyChanged,
   filter,
   map,
   takeUntil,
@@ -26,7 +29,7 @@ import {
 } from 'src/renderer/app/constants/routes.constants';
 import { HeadersProperties } from 'src/renderer/app/models/common.model';
 import { DataSubject } from 'src/renderer/app/models/data.model';
-import { EventsService } from 'src/renderer/app/services/events.service';
+import { Store } from 'src/renderer/app/stores/store';
 
 @Component({
   selector: 'app-headers-list',
@@ -35,7 +38,7 @@ import { EventsService } from 'src/renderer/app/services/events.service';
 })
 export class HeadersListComponent implements OnInit, OnDestroy {
   @Input()
-  public activeDataSubject$: Observable<RouteResponse | Environment>;
+  public activeDataSubject$: Observable<RouteResponse | Environment | Callback>;
   @Input()
   public headersPropertyName: HeadersProperties;
   @Input()
@@ -48,8 +51,8 @@ export class HeadersListComponent implements OnInit, OnDestroy {
   public headersUpdated = new EventEmitter<Header[]>();
   @Output()
   public secondaryButtonClicked = new EventEmitter();
-  public dataSubject$: Observable<RouteResponse | Environment>;
-  public form: FormGroup;
+  public dataSubject$: Observable<RouteResponse | Environment | Callback>;
+  public form: UntypedFormGroup;
   public headerNamesSearch = this.buildSearch(headerNames);
   public headerValuesSearch = this.buildSearch(headerValues);
   public deleteHeaderRequested$ = new TimedBoolean();
@@ -57,12 +60,12 @@ export class HeadersListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
-    private eventsService: EventsService
+    private formBuilder: UntypedFormBuilder,
+    private store: Store
   ) {}
 
   public get headers() {
-    return this.form.get('headers') as FormArray;
+    return this.form.get('headers') as UntypedFormArray;
   }
 
   ngOnInit() {
@@ -73,24 +76,11 @@ export class HeadersListComponent implements OnInit, OnDestroy {
     // initialize the form depending on the env/route response headers
     this.dataSubject$ = this.activeDataSubject$.pipe(
       filter((dataSubject) => !!dataSubject),
-      distinctUntilKeyChanged('uuid'),
+      this.store.distinctUUIDOrForce(),
       tap((dataSubject) => {
         this.replaceHeaders(dataSubject[this.headersPropertyName], false);
       })
     );
-
-    // subscribe to header injection observable
-    this.eventsService.injectHeaders$
-      .pipe(
-        filter(
-          (injectedPayload) => injectedPayload.dataSubject === this.dataSubject
-        ),
-        tap((injectedPayload) => {
-          this.injectHeaders(injectedPayload.headers);
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe();
 
     // subscribe to changes and send new headers values to the store
     this.form.valueChanges
@@ -149,27 +139,6 @@ export class HeadersListComponent implements OnInit, OnDestroy {
     if (confirmValue.enabled && headerIndex === confirmValue.payload) {
       this.headers.removeAt(headerIndex);
     }
-  }
-
-  /**
-   * Replace existing header with injected header value, or append injected header
-   */
-  private injectHeaders(headers: Header[]) {
-    const newHeaders = [...this.headers.value];
-
-    headers.forEach((header) => {
-      const headerExistsIndex = newHeaders.findIndex(
-        (newHeader) => newHeader.key === header.key
-      );
-
-      if (headerExistsIndex > -1 && !newHeaders[headerExistsIndex].value) {
-        newHeaders[headerExistsIndex] = { ...header };
-      } else if (headerExistsIndex === -1) {
-        newHeaders.push({ ...header });
-      }
-    });
-
-    this.replaceHeaders(newHeaders);
   }
 
   /**

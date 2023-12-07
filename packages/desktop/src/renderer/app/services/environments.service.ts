@@ -1,24 +1,35 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
+  BuildCallback,
+  BuildCRUDRoute,
   BuildDatabucket,
   BuildDemoEnvironment,
   BuildEnvironment,
+  BuildFolder,
   BuildHeader,
-  BuildRoute,
+  BuildHTTPRoute,
   BuildRouteResponse,
+  Callback,
+  CloneCallback,
+  CloneDataBucket,
   CloneObject,
   CloneRouteResponse,
   DataBucket,
   Environment,
   EnvironmentDefault,
+  Folder,
+  generateUUID,
   Header,
   HighestMigrationId,
-  IsLegacyExportData,
+  ReorderableContainers,
+  ReorderAction,
   Route,
+  RouteDefault,
   RouteResponse,
+  RouteResponseDefault,
   RouteSchema,
-  UnwrapLegacyExport
+  RouteType
 } from '@mockoon/commons';
 import {
   BehaviorSubject,
@@ -35,7 +46,6 @@ import {
 import {
   catchError,
   debounceTime,
-  delay,
   filter,
   first,
   map,
@@ -49,23 +59,23 @@ import {
 import { Logger } from 'src/renderer/app/classes/logger';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { FocusableInputs } from 'src/renderer/app/enums/ui.enum';
-import { HumanizeText } from 'src/renderer/app/libs/utils.lib';
-import { DatabucketProperties } from 'src/renderer/app/models/databucket.model';
-import { EnvironmentProperties } from 'src/renderer/app/models/environment.model';
-import { MessageCodes } from 'src/renderer/app/models/messages.model';
 import {
-  RouteProperties,
-  RouteResponseProperties
-} from 'src/renderer/app/models/route.model';
+  environmentHasRoute,
+  HumanizeText
+} from 'src/renderer/app/libs/utils.lib';
+import {
+  CallbackResponseUsage,
+  CallbackSpecTabNameType,
+  CallbackTabsNameType,
+  CallbackUsage
+} from 'src/renderer/app/models/callback.model';
+import { DataSubject } from 'src/renderer/app/models/data.model';
+import { MessageCodes } from 'src/renderer/app/models/messages.model';
 import {
   EnvironmentLogsTabsNameType,
   TabsNameType,
   ViewsNameType
 } from 'src/renderer/app/models/store.model';
-import {
-  DraggableContainerNames,
-  ScrollDirection
-} from 'src/renderer/app/models/ui.model';
 import { DataService } from 'src/renderer/app/services/data.service';
 import { DialogsService } from 'src/renderer/app/services/dialogs.service';
 import { EventsService } from 'src/renderer/app/services/events.service';
@@ -74,23 +84,32 @@ import { StorageService } from 'src/renderer/app/services/storage.service';
 import { ToastsService } from 'src/renderer/app/services/toasts.service';
 import { UIService } from 'src/renderer/app/services/ui.service';
 import {
+  Actions,
+  addCallbackAction,
   addDatabucketAction,
   addEnvironmentAction,
+  addFolderAction,
   addRouteAction,
   addRouteResponseAction,
+  duplicateCallbackToAnotherEnvironmentAction,
   duplicateDatabucketToAnotherEnvironmentAction,
   duplicateRouteToAnotherEnvironmentAction,
-  moveDatabucketsAction,
-  moveEnvironmentsAction,
-  moveRouteResponsesAction,
-  moveRoutesAction,
+  logRequestAction,
   navigateEnvironmentsAction,
-  navigateRoutesAction,
+  refreshEnvironmentAction,
   reloadEnvironmentAction,
+  removeCallbackAction,
   removeDatabucketAction,
   removeEnvironmentAction,
+  removeFolderAction,
   removeRouteAction,
   removeRouteResponseAction,
+  reorderCallbacksAction,
+  reorderDatabucketsAction,
+  reorderEnvironmentsAction,
+  reorderRouteResponsesAction,
+  reorderRoutesAction,
+  setActiveCallbackAction,
   setActiveDatabucketAction,
   setActiveEnvironmentAction,
   setActiveEnvironmentLogTabAction,
@@ -98,10 +117,14 @@ import {
   setActiveRouteAction,
   setActiveRouteResponseAction,
   setActiveTabAction,
+  setActiveTabInCallbackViewAction,
   setActiveViewAction,
   startEntityDuplicationToAnotherEnvironmentAction,
+  updateCallbackAction,
   updateDatabucketAction,
   updateEnvironmentAction,
+  updateEnvironmentStatusAction,
+  updateFolderAction,
   updateRouteAction,
   updateRouteResponseAction,
   updateSettingsAction,
@@ -109,7 +132,7 @@ import {
 } from 'src/renderer/app/stores/actions';
 import { ReducerDirectionType } from 'src/renderer/app/stores/reducer';
 import { Store } from 'src/renderer/app/stores/store';
-import { Config } from 'src/shared/config';
+import { Config } from 'src/renderer/config';
 import { EnvironmentDescriptor } from 'src/shared/models/settings.model';
 
 @Injectable({
@@ -136,7 +159,7 @@ export class EnvironmentsService extends Logger {
     protected toastService: ToastsService,
     private http: HttpClient
   ) {
-    super('[SERVICE][ENVIRONMENTS]', toastService);
+    super('[RENDERER][SERVICE][ENVIRONMENTS] ', toastService);
   }
 
   /**
@@ -183,13 +206,12 @@ export class EnvironmentsService extends Logger {
           )
         );
       }),
-      // filter empty environments (file not found) and environments migrated with more recent app version (or lastMigration do not exists < v1.7.0)
+      // filter empty environments (file not found) and environments migrated with more recent app version
       map((environmentsData) =>
         environmentsData.filter(
           (environmentData) =>
             !!environmentData &&
-            (environmentData.environment.lastMigration === undefined ||
-              environmentData.environment.lastMigration <= HighestMigrationId)
+            environmentData.environment.lastMigration <= HighestMigrationId
         )
       ),
       tap((environmentsData) => {
@@ -216,6 +238,12 @@ export class EnvironmentsService extends Logger {
             }))
           })
         );
+
+        const settings = this.store.get('settings');
+
+        if (settings.startEnvironmentsOnLoad) {
+          this.toggleAllEnvironments();
+        }
       })
     );
   }
@@ -305,14 +333,13 @@ export class EnvironmentsService extends Logger {
 
       const confirmReload$ = new Subject<boolean>();
 
-      this.eventsService.confirmModalEvents.next({
+      this.eventsService.confirmModalPayload$.next({
         title: 'External changes detected',
         text: 'The following environments were modified outside Mockoon:',
         sub: 'You can disable file monitoring in the application settings (Ctrl + Comma)',
         confirmButtonText: 'Reload all',
         cancelButtonText: 'Ignore',
         subIcon: 'info',
-        subIconClass: 'text-primary',
         list$: this.environmentChanges$.pipe(
           map((environmentChanges) =>
             environmentChanges.map(
@@ -322,6 +349,7 @@ export class EnvironmentsService extends Logger {
         ),
         confirmed$: confirmReload$
       });
+      this.uiService.openModal('confirm');
 
       return confirmReload$.pipe(
         switchMap((confirmed) => {
@@ -378,10 +406,6 @@ export class EnvironmentsService extends Logger {
         if (environmentStatus.running) {
           this.serverService.start(newEnvironment, environmentPath);
         }
-      }),
-      delay(1000),
-      tap(() => {
-        this.store.update(setActiveViewAction('ENV_ROUTES'));
       })
     );
   }
@@ -411,20 +435,13 @@ export class EnvironmentsService extends Logger {
   }
 
   /**
-   * Set active route by UUID or navigation
+   * Set active route by UUID
    */
-  public setActiveRoute(routeUUIDOrDirection: string | ReducerDirectionType) {
+  public setActiveRoute(routeUUID: string) {
     const activeRouteUUID = this.store.get('activeRouteUUID');
 
-    if (activeRouteUUID && activeRouteUUID !== routeUUIDOrDirection) {
-      if (
-        routeUUIDOrDirection === 'next' ||
-        routeUUIDOrDirection === 'previous'
-      ) {
-        this.store.update(navigateRoutesAction(routeUUIDOrDirection));
-      } else {
-        this.store.update(setActiveRouteAction(routeUUIDOrDirection));
-      }
+    if (activeRouteUUID !== routeUUID) {
+      this.store.update(setActiveRouteAction(routeUUID));
     }
   }
 
@@ -481,8 +498,6 @@ export class EnvironmentsService extends Logger {
             insertAfterIndex
           })
         );
-
-        this.uiService.scrollEnvironmentsMenu.next(ScrollDirection.BOTTOM);
       })
     );
   }
@@ -562,7 +577,7 @@ export class EnvironmentsService extends Logger {
         port: this.dataService.getNewEnvironmentPort()
       };
 
-      newEnvironment = this.dataService.renewEnvironmentUUIDs(newEnvironment);
+      newEnvironment = this.dataService.deduplicateUUIDs(newEnvironment, true);
 
       return this.addEnvironment(newEnvironment, environmentToDuplicateindex);
     }
@@ -638,12 +653,143 @@ export class EnvironmentsService extends Logger {
   }
 
   /**
-   * Add a new route and save it in the store
+   * Add a new folder and save it in the store
    */
-  public addRoute() {
-    if (this.store.getActiveEnvironment()) {
-      this.store.update(addRouteAction(BuildRoute()));
-      this.uiService.scrollRoutesMenu.next(ScrollDirection.BOTTOM);
+  public addFolder(folderId: string | 'root') {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (activeEnvironment) {
+      this.store.update(
+        addFolderAction(activeEnvironment.uuid, BuildFolder(), folderId, true)
+      );
+    }
+  }
+
+  /**
+   * Update a folder and save it in the store
+   */
+  public updateFolder(folderUuid: string, folderProperties: Partial<Folder>) {
+    this.store.update(
+      updateFolderAction(
+        this.store.getActiveEnvironment().uuid,
+        folderUuid,
+        folderProperties
+      )
+    );
+  }
+
+  /**
+   * Toogle a folder collapse state and save it in the store
+   */
+  public toggleFolderCollapse(folderUuid: string) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const selectedFolder = activeEnvironment.folders.find(
+      (folder) => folder.uuid === folderUuid
+    );
+
+    if (selectedFolder) {
+      const collapsedFolders = {
+        ...this.store.get('settings').collapsedFolders
+      };
+
+      if (!collapsedFolders[activeEnvironment.uuid]) {
+        collapsedFolders[activeEnvironment.uuid] = [];
+      }
+
+      if (
+        collapsedFolders[activeEnvironment.uuid].includes(selectedFolder.uuid)
+      ) {
+        collapsedFolders[activeEnvironment.uuid] = collapsedFolders[
+          activeEnvironment.uuid
+        ].filter(
+          (collapsedFolderUuid) => collapsedFolderUuid !== selectedFolder.uuid
+        );
+      } else {
+        collapsedFolders[activeEnvironment.uuid] = [
+          ...collapsedFolders[activeEnvironment.uuid],
+          selectedFolder.uuid
+        ];
+      }
+
+      this.store.update(updateSettingsAction({ collapsedFolders }));
+    }
+  }
+
+  /**
+   * Remove a folder and save
+   */
+  public removeFolder(folderUuid: string) {
+    if (folderUuid) {
+      this.store.update(
+        removeFolderAction(this.store.getActiveEnvironment().uuid, folderUuid)
+      );
+    }
+  }
+
+  /**
+   * Add a new HTTP route and save it in the store
+   */
+  public addHTTPRoute(
+    folderId: string | 'root',
+    options: {
+      endpoint: typeof RouteDefault.endpoint;
+      body: typeof RouteResponseDefault.body;
+    } = {
+      endpoint: RouteDefault.endpoint,
+      body: RouteResponseDefault.body
+    }
+  ) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (activeEnvironment) {
+      this.store.update(
+        addRouteAction(
+          activeEnvironment.uuid,
+          BuildHTTPRoute(true, options),
+          folderId,
+          true
+        )
+      );
+
+      setTimeout(() => {
+        this.uiService.focusInput(FocusableInputs.ROUTE_PATH);
+      }, 0);
+    }
+  }
+
+  /**
+   * Add a new CRUD route and save it in the store
+   */
+  public addCRUDRoute(
+    folderId: string | 'root',
+    options: {
+      endpoint: typeof RouteDefault.endpoint;
+      dataBucket: Partial<DataBucket>;
+    } = {
+      endpoint: RouteDefault.endpoint,
+      dataBucket: null
+    }
+  ) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (activeEnvironment) {
+      let newCRUDRoute = BuildCRUDRoute(true, {
+        endpoint: options.endpoint,
+        databucketID: RouteResponseDefault.databucketID
+      });
+
+      if (options.dataBucket) {
+        const newBucket = this.addDatabucket(options.dataBucket);
+
+        newCRUDRoute = BuildCRUDRoute(true, {
+          endpoint: options.endpoint,
+          databucketID: newBucket.id
+        });
+      }
+
+      this.store.update(
+        addRouteAction(activeEnvironment.uuid, newCRUDRoute, folderId, true)
+      );
 
       setTimeout(() => {
         this.uiService.focusInput(FocusableInputs.ROUTE_PATH);
@@ -654,16 +800,42 @@ export class EnvironmentsService extends Logger {
   /**
    * Add a new databucket and save it in the store
    */
-  public addDatabucket() {
-    if (this.store.getActiveEnvironment()) {
-      let newDatabucket = BuildDatabucket();
+  public addDatabucket(dataBucket: Partial<DataBucket> = null) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    if (activeEnvironment) {
+      let newDatabucket = BuildDatabucket(dataBucket);
       newDatabucket = this.dataService.deduplicateDatabucketID(newDatabucket);
 
-      this.store.update(addDatabucketAction(newDatabucket));
-      this.uiService.scrollRoutesMenu.next(ScrollDirection.BOTTOM);
+      this.store.update(
+        addDatabucketAction(activeEnvironment.uuid, newDatabucket, true)
+      );
 
       setTimeout(() => {
         this.uiService.focusInput(FocusableInputs.DATABUCKET_NAME);
+      }, 0);
+
+      return newDatabucket;
+    }
+
+    return null;
+  }
+
+  /**
+   * Add a new callback and save it in the store.
+   */
+  public addCallback() {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (activeEnvironment) {
+      let newCallback = BuildCallback();
+      newCallback = this.dataService.deduplicateCallbackID(newCallback);
+
+      this.store.update(
+        addCallbackAction(activeEnvironment.uuid, newCallback, true)
+      );
+
+      setTimeout(() => {
+        this.uiService.focusInput(FocusableInputs.CALLBACK_NAME);
       }, 0);
     }
   }
@@ -680,7 +852,14 @@ export class EnvironmentsService extends Logger {
 
         // if has a current environment append imported route
         if (this.store.get('activeEnvironmentUUID')) {
-          this.store.update(addRouteAction(route));
+          this.store.update(
+            addRouteAction(
+              this.store.get('activeEnvironmentUUID'),
+              route,
+              'root',
+              true
+            )
+          );
 
           return EMPTY;
         } else {
@@ -690,12 +869,12 @@ export class EnvironmentsService extends Logger {
               hasDefaultRoute: true,
               port: this.dataService.getNewEnvironmentPort()
             }),
-            routes: [route]
+            routes: [route],
+            rootChildren: [{ type: 'route', uuid: route.uuid }]
           });
         }
       }),
       tap(() => {
-        this.uiService.scrollRoutesMenu.next(ScrollDirection.BOTTOM);
         this.uiService.focusInput(FocusableInputs.ROUTE_PATH);
       }),
       catchError((error) => {
@@ -712,47 +891,80 @@ export class EnvironmentsService extends Logger {
    * Add a new route response and save it in the store
    */
   public addRouteResponse() {
-    this.store.update(addRouteResponseAction(BuildRouteResponse()));
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
+
+    this.store.update(
+      addRouteResponseAction(
+        activeEnvironment.uuid,
+        activeRoute.uuid,
+        BuildRouteResponse(),
+        true
+      )
+    );
   }
 
   /**
    * Set active databucket by UUID
    */
-  public setActiveDatabucket(databucketUUID: string | ReducerDirectionType) {
+  public setActiveDatabucket(databucketUUID: string) {
     const activeDatabucketUUID = this.store.get('activeDatabucketUUID');
 
     if (activeDatabucketUUID && activeDatabucketUUID !== databucketUUID) {
       this.store.update(setActiveDatabucketAction(databucketUUID));
     }
   }
+
+  /**
+   * Set active callback by UUID
+   */
+  public setActiveCallback(callbackUUID: string) {
+    const activeCallbackUUID = this.store.get('activeCallbackUUID');
+
+    if (activeCallbackUUID !== callbackUUID) {
+      this.store.update(setActiveCallbackAction(callbackUUID));
+    }
+  }
+
   /**
    * Duplicate the given route response and save it in the store
    */
   public duplicateRouteResponse() {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
     const activeRouteResponse = this.store.getActiveRouteResponse();
+
     this.store.update(
-      addRouteResponseAction(CloneRouteResponse(activeRouteResponse), true)
+      addRouteResponseAction(
+        activeEnvironment.uuid,
+        activeRoute.uuid,
+        CloneRouteResponse(activeRouteResponse),
+        true,
+        activeRouteResponse.uuid
+      )
     );
   }
 
   /**
-   * Duplicate a route, or the current active route and append it at the end
+   * Duplicate a route, or the current active route and append it at the end of the list in the same folder
    */
-  public duplicateRoute(routeUUID?: string) {
+  public duplicateRoute(parentId: string | 'root', routeUUID?: string) {
     let routeToDuplicate = this.store.getActiveRoute();
+    const activeEnvironment = this.store.getActiveEnvironment();
 
     if (routeUUID) {
-      routeToDuplicate = this.store
-        .getActiveEnvironment()
-        .routes.find((route) => route.uuid === routeUUID);
+      routeToDuplicate = activeEnvironment.routes.find(
+        (route) => route.uuid === routeUUID
+      );
     }
 
     if (routeToDuplicate) {
       let newRoute: Route = CloneObject(routeToDuplicate);
-
       newRoute = this.dataService.renewRouteUUIDs(newRoute);
 
-      this.store.update(addRouteAction(newRoute, routeToDuplicate.uuid));
+      this.store.update(
+        addRouteAction(activeEnvironment.uuid, newRoute, parentId, true)
+      );
     }
   }
 
@@ -766,9 +978,9 @@ export class EnvironmentsService extends Logger {
     const routeToDuplicate = this.store.getRouteByUUID(routeUUID);
 
     if (routeToDuplicate) {
-      const newRoute: Route = this.dataService.renewRouteUUIDs(
-        CloneObject(routeToDuplicate)
-      );
+      let newRoute: Route = CloneObject(routeToDuplicate);
+      newRoute = this.dataService.renewRouteUUIDs(newRoute);
+
       this.store.update(
         duplicateRouteToAnotherEnvironmentAction(
           newRoute,
@@ -782,19 +994,44 @@ export class EnvironmentsService extends Logger {
    * Duplicate a databucket, or the current active databucket and append it at the end
    */
   public duplicateDatabucket(databucketUUID: string) {
-    const databucketToDuplicate = this.store
-      .getActiveEnvironment()
-      .data.find((data) => data.uuid === databucketUUID);
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const databucketToDuplicate = activeEnvironment.data.find(
+      (data) => data.uuid === databucketUUID
+    );
 
     if (databucketToDuplicate) {
-      let newDatabucket: DataBucket = CloneObject(databucketToDuplicate);
-
-      newDatabucket.name = `${databucketToDuplicate.name} (copy)`;
-      newDatabucket = this.dataService.renewDatabucketUUIDs(newDatabucket);
-      newDatabucket = this.dataService.deduplicateDatabucketID(newDatabucket);
+      const newDatabucket: DataBucket = CloneDataBucket(databucketToDuplicate);
 
       this.store.update(
-        addDatabucketAction(newDatabucket, databucketToDuplicate.uuid)
+        addDatabucketAction(
+          activeEnvironment.uuid,
+          newDatabucket,
+          true,
+          databucketToDuplicate.uuid
+        )
+      );
+    }
+  }
+
+  /**
+   * Duplicate a callback, or the current active callback and append it at the end
+   */
+  public duplicateCallback(callbackUuid: string) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const callbackToDuplicate = activeEnvironment.callbacks.find(
+      (callback) => callback.uuid === callbackUuid
+    );
+
+    if (callbackToDuplicate) {
+      const newCallback: Callback = CloneCallback(callbackToDuplicate);
+
+      this.store.update(
+        addCallbackAction(
+          activeEnvironment.uuid,
+          newCallback,
+          true,
+          callbackToDuplicate.uuid
+        )
       );
     }
   }
@@ -810,9 +1047,10 @@ export class EnvironmentsService extends Logger {
       this.store.getDatabucketByUUID(databucketUUID);
 
     if (databucketToDuplicate) {
-      let newDatabucket: DataBucket = this.dataService.renewDatabucketUUIDs(
-        CloneObject(databucketToDuplicate)
-      );
+      let newDatabucket: DataBucket = {
+        ...CloneObject(databucketToDuplicate),
+        uuid: generateUUID()
+      };
       newDatabucket = this.dataService.deduplicateDatabucketID(newDatabucket);
 
       this.store.update(
@@ -825,11 +1063,38 @@ export class EnvironmentsService extends Logger {
   }
 
   /**
+   * Duplicate a callback to another environment
+   */
+  public duplicateCallbackInAnotherEnvironment(
+    callbackUUID: string,
+    targetEnvironmentUUID: string
+  ) {
+    const callbackToDuplicate = this.store.getCallbackByUUID(callbackUUID);
+
+    if (callbackToDuplicate) {
+      let newCallback: Callback = {
+        ...CloneObject(callbackToDuplicate),
+        uuid: generateUUID()
+      };
+      newCallback = this.dataService.deduplicateCallbackID(newCallback);
+
+      this.store.update(
+        duplicateCallbackToAnotherEnvironmentAction(
+          newCallback,
+          targetEnvironmentUUID
+        )
+      );
+    }
+  }
+
+  /**
    * Remove a route and save
    */
-  public removeRoute(routeUUID: string = this.store.get('activeRouteUUID')) {
-    if (routeUUID) {
-      this.store.update(removeRouteAction(routeUUID));
+  public removeRoute(routeUuid: string = this.store.get('activeRouteUUID')) {
+    if (routeUuid) {
+      this.store.update(
+        removeRouteAction(this.store.getActiveEnvironment().uuid, routeUuid)
+      );
     }
   }
 
@@ -837,34 +1102,101 @@ export class EnvironmentsService extends Logger {
    * Remove current route response and save
    */
   public removeRouteResponse() {
-    this.store.update(removeRouteResponseAction());
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
+    const activeRouteResponse = this.store.getActiveRouteResponse();
+
+    // we shouldn't be able to remove the last route response
+    if (
+      (activeRoute.type === RouteType.HTTP &&
+        activeRoute.responses.length > 1) ||
+      (activeRoute.type === RouteType.CRUD &&
+        !activeRouteResponse.default &&
+        activeRoute.responses.length > 1)
+    ) {
+      this.store.update(
+        removeRouteResponseAction(
+          activeEnvironment.uuid,
+          activeRoute.uuid,
+          activeRouteResponse.uuid
+        )
+      );
+    }
   }
 
   /**
-   * Remove a databucket and save
+   * Remove a databucket
    */
   public removeDatabucket(
-    databucketUUID: string = this.store.get('activeDatabucketUUID')
+    databucketUuid: string = this.store.get('activeDatabucketUUID')
   ) {
-    if (databucketUUID) {
-      this.store.update(removeDatabucketAction(databucketUUID));
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (databucketUuid) {
+      this.store.update(
+        removeDatabucketAction(activeEnvironment.uuid, databucketUuid)
+      );
+    }
+  }
+
+  /**
+   * Remove a callback
+   */
+  public removeCallback(callbackUuid: string) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    if (callbackUuid) {
+      this.store.update(
+        removeCallbackAction(activeEnvironment.uuid, callbackUuid)
+      );
     }
   }
 
   /**
    * Enable and disable a route
    */
-  public toggleRoute(routeUUID?: string) {
-    const selectedRoute = this.store
-      .getActiveEnvironment()
-      .routes.find((route) => route.uuid === routeUUID);
+  public toggleRoute(routeUuid?: string) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const selectedRoute = activeEnvironment.routes.find(
+      (route) => route.uuid === routeUuid
+    );
+
     if (selectedRoute) {
-      this.store.update(
-        updateRouteAction({
-          uuid: selectedRoute.uuid,
-          enabled: !selectedRoute.enabled
-        })
-      );
+      const disabledRoutes = { ...this.store.get('settings').disabledRoutes };
+
+      if (!disabledRoutes[activeEnvironment.uuid]) {
+        disabledRoutes[activeEnvironment.uuid] = [];
+      }
+
+      if (disabledRoutes[activeEnvironment.uuid].includes(selectedRoute.uuid)) {
+        disabledRoutes[activeEnvironment.uuid] = disabledRoutes[
+          activeEnvironment.uuid
+        ].filter(
+          (disabledRouteUuid) => disabledRouteUuid !== selectedRoute.uuid
+        );
+      } else {
+        disabledRoutes[activeEnvironment.uuid] = [
+          ...disabledRoutes[activeEnvironment.uuid],
+          selectedRoute.uuid
+        ];
+      }
+
+      this.store.update(updateSettingsAction({ disabledRoutes }));
+
+      const environmentsStatus = this.store.get('environmentsStatus');
+      const activeEnvironmentStatus =
+        environmentsStatus[activeEnvironment.uuid];
+
+      if (activeEnvironmentStatus.running) {
+        this.store.update(
+          updateEnvironmentStatusAction(
+            {
+              needRestart: true
+            },
+            activeEnvironment.uuid
+          )
+        );
+      }
     }
   }
 
@@ -872,7 +1204,55 @@ export class EnvironmentsService extends Logger {
    * Set active tab
    */
   public setActiveTab(activeTab: TabsNameType) {
+    // in the first response of a crud route two tabs are disabled
+    if (
+      this.store.getActiveRoute().type === RouteType.CRUD &&
+      this.store.getActiveRouteResponse().default &&
+      (activeTab === 'SETTINGS' || activeTab === 'RULES')
+    ) {
+      return;
+    }
+
     this.store.update(setActiveTabAction(activeTab));
+  }
+
+  /**
+   * Set active tab of callback view.
+   */
+  public setActiveTabInCallbackView(activeTab: CallbackTabsNameType) {
+    const activeSpecTab = this.store.getSelectedSpecTabInCallbackView();
+
+    this.store.update(
+      setActiveTabInCallbackViewAction(activeTab, activeSpecTab)
+    );
+  }
+
+  /**
+   * Set active spec tab of callback view.
+   */
+  public setActiveSpecTabInCallbackView(
+    activeSpecTab: CallbackSpecTabNameType
+  ) {
+    const activeTab = this.store.getSelectedCallbackTab();
+
+    this.store.update(
+      setActiveTabInCallbackViewAction(activeTab, activeSpecTab)
+    );
+  }
+
+  /**
+   * Navigate to callback usage.
+   */
+  public navigateToCallbackUsageInRoute(
+    callbackUsage: CallbackUsage,
+    callbackResponse: CallbackResponseUsage
+  ) {
+    this.setActiveView('ENV_ROUTES');
+    this.setActiveRoute(callbackUsage.routeUUID);
+    if (callbackResponse) {
+      this.setActiveRouteResponse(callbackResponse.responseUUID);
+    }
+    this.setActiveTab('CALLBACKS');
   }
 
   /**
@@ -911,29 +1291,112 @@ export class EnvironmentsService extends Logger {
   /**
    * Update the active environment
    */
-  public updateActiveEnvironment(properties: EnvironmentProperties) {
-    this.store.update(updateEnvironmentAction(properties));
+  public updateActiveEnvironment(
+    properties: Partial<Environment>,
+    force = false
+  ) {
+    this.store.update(
+      updateEnvironmentAction(
+        this.store.get('activeEnvironmentUUID'),
+        properties
+      ),
+      force
+    );
   }
 
   /**
    * Update the active route
    */
-  public updateActiveRoute(properties: RouteProperties) {
-    this.store.update(updateRouteAction(properties));
+  public updateActiveRoute(properties: Partial<Route>) {
+    this.store.update(
+      updateRouteAction(
+        this.store.getActiveEnvironment().uuid,
+        this.store.getActiveRoute().uuid,
+        properties
+      )
+    );
   }
 
   /**
    * Update the active route response
    */
-  public updateActiveRouteResponse(properties: RouteResponseProperties) {
-    this.store.update(updateRouteResponseAction(properties));
+  public updateActiveRouteResponse(
+    properties: Partial<RouteResponse>,
+    forceUpdate = false
+  ) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
+    const activeRouteResponse = this.store.getActiveRouteResponse();
+
+    this.store.update(
+      updateRouteResponseAction(
+        activeEnvironment.uuid,
+        activeRoute.uuid,
+        activeRouteResponse.uuid,
+        properties
+      ),
+      forceUpdate
+    );
+  }
+
+  /**
+   * Set the route response as default
+   */
+  public setDefaultRouteResponse(routeResponseUuid: string) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
+
+    this.store.update(
+      updateRouteResponseAction(
+        activeEnvironment.uuid,
+        activeRoute.uuid,
+        routeResponseUuid,
+        { default: true }
+      )
+    );
+  }
+
+  /**
+   * Navigates to the definition of the provided callback by id.
+   */
+  public navigateToCallbackDefinition(callbackUUID: string) {
+    const activeSpecTab = this.store.getSelectedSpecTabInCallbackView();
+
+    this.store.update(setActiveViewAction('ENV_CALLBACKS'));
+    this.store.update(setActiveCallbackAction(callbackUUID));
+    this.store.update(setActiveTabInCallbackViewAction('SPEC', activeSpecTab));
   }
 
   /**
    * Update the active databucket
    */
-  public updateActiveDatabucket(properties: DatabucketProperties) {
-    this.store.update(updateDatabucketAction(properties));
+  public updateActiveDatabucket(properties: Partial<DataBucket>) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeDatabucket = this.store.getActiveDatabucket();
+
+    this.store.update(
+      updateDatabucketAction(
+        activeEnvironment.uuid,
+        activeDatabucket.uuid,
+        properties
+      )
+    );
+  }
+
+  /**
+   * Update the active databucket
+   */
+  public updateActiveCallback(properties: Partial<Callback>) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeCallback = this.store.getActiveCallback();
+
+    this.store.update(
+      updateCallbackAction(
+        activeEnvironment.uuid,
+        activeCallback.uuid,
+        properties
+      )
+    );
   }
 
   /**
@@ -950,12 +1413,12 @@ export class EnvironmentsService extends Logger {
     }
 
     const environmentsStatus = this.store.get('environmentsStatus');
-    const activeEnvironmentState = environmentsStatus[environment.uuid];
+    const activeEnvironmentStatus = environmentsStatus[environment.uuid];
 
-    if (activeEnvironmentState.running) {
+    if (activeEnvironmentStatus.running) {
       this.serverService.stop(environment.uuid);
 
-      if (activeEnvironmentState.needRestart) {
+      if (activeEnvironmentStatus.needRestart) {
         this.serverService.start(environment, environmentPath);
       }
     } else {
@@ -972,9 +1435,9 @@ export class EnvironmentsService extends Logger {
 
     // check if environments should be started or stopped. If at least one env is turned off, we'll turn all on
     const shouldStart = Object.keys(environmentsStatus).some(
-      (uuid) =>
-        !environmentsStatus[uuid].running ||
-        environmentsStatus[uuid].needRestart
+      (environmentUUID) =>
+        !environmentsStatus[environmentUUID].running ||
+        environmentsStatus[environmentUUID].needRestart
     );
 
     environments.map((environment) => {
@@ -1003,35 +1466,91 @@ export class EnvironmentsService extends Logger {
   }
 
   /**
-   * Move a menu item (envs / routes)
+   * Reorder an items list
    */
-  public moveMenuItem(
-    type: DraggableContainerNames,
-    sourceIndex: number,
-    targetIndex: number
+  public reorderItems(
+    reorderAction: ReorderAction<string>,
+    type: ReorderableContainers
   ) {
-    const storeActions = {
-      routes: moveRoutesAction,
-      databuckets: moveDatabucketsAction,
-      environments: moveEnvironmentsAction,
-      routeResponses: moveRouteResponsesAction
-    };
+    const activeEnvironmentUuid = this.store.getActiveEnvironment().uuid;
+    const activeRouteUuid = this.store.getActiveRoute().uuid;
 
-    this.store.update(storeActions[type]({ sourceIndex, targetIndex }));
+    let storeAction: Actions;
+
+    switch (type) {
+      case ReorderableContainers.ENVIRONMENTS:
+        storeAction = reorderEnvironmentsAction(reorderAction);
+        break;
+
+      case ReorderableContainers.ROUTES:
+        storeAction = reorderRoutesAction(activeEnvironmentUuid, reorderAction);
+        break;
+
+      case ReorderableContainers.ROUTE_RESPONSES:
+        storeAction = reorderRouteResponsesAction(
+          activeEnvironmentUuid,
+          activeRouteUuid,
+          reorderAction
+        );
+        break;
+
+      case ReorderableContainers.DATABUCKETS:
+        storeAction = reorderDatabucketsAction(
+          activeEnvironmentUuid,
+          reorderAction
+        );
+        break;
+
+      case ReorderableContainers.CALLBACKS:
+        storeAction = reorderCallbacksAction(
+          activeEnvironmentUuid,
+          reorderAction
+        );
+        break;
+      default:
+        break;
+    }
+
+    this.store.update(storeAction);
   }
 
   /**
    * Create a route based on a environment log entry
    */
-  public createRouteFromLog(logUUID?: string) {
+  public createRouteFromLog(
+    environmentUuid: string,
+    logUUID: string,
+    force = false
+  ) {
     const environmentsLogs = this.store.get('environmentsLogs');
-    const uuidEnvironment = this.store.get('activeEnvironmentUUID');
-    const log = environmentsLogs[uuidEnvironment].find(
+    const targetEnvironment = this.store.getEnvironmentByUUID(environmentUuid);
+    const log = environmentsLogs[environmentUuid].find(
       (environmentLog) => environmentLog.UUID === logUUID
     );
 
     if (log) {
       let routeResponse: RouteResponse;
+      const prefix = targetEnvironment.endpointPrefix;
+      let endpoint = log.url.slice(1); // Remove the initial slash '/'
+      if (prefix && endpoint.startsWith(prefix)) {
+        endpoint = endpoint.slice(prefix.length + 1); // Remove the prefix and the slash
+      }
+
+      // escape parantheses with backslashes because they are
+      // otherwise interpreted as regex groups by path-to-regexp
+      endpoint = endpoint.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+
+      // check if route already exists
+      if (
+        !force &&
+        environmentHasRoute(targetEnvironment, {
+          endpoint,
+          method: log.method,
+          type: RouteType.HTTP
+        })
+      ) {
+        return;
+      }
 
       if (log.response) {
         const headers: Header[] = [];
@@ -1065,20 +1584,16 @@ export class EnvironmentsService extends Logger {
         routeResponse = BuildRouteResponse();
       }
 
-      const prefix = this.store.getActiveEnvironment().endpointPrefix;
-      let endpoint = log.url.slice(1); // Remove the initial slash '/'
-      if (prefix && endpoint.startsWith(prefix)) {
-        endpoint = endpoint.slice(prefix.length + 1); // Remove the prefix and the slash
-      }
-
       const newRoute: Route = {
-        ...BuildRoute(),
+        ...BuildHTTPRoute(),
         method: log.method,
         endpoint,
         responses: [routeResponse]
       };
 
-      this.store.update(addRouteAction(newRoute));
+      this.store.update(
+        addRouteAction(environmentUuid, newRoute, 'root', force)
+      );
     }
   }
 
@@ -1087,11 +1602,13 @@ export class EnvironmentsService extends Logger {
    */
   public startEntityDuplicationToAnotherEnvironment(
     subjectUUID: string,
-    subject: string
+    subject: DataSubject
   ) {
     this.store.update(
       startEntityDuplicationToAnotherEnvironmentAction(subjectUUID, subject)
     );
+
+    this.uiService.openModal('duplicate_to_environment');
   }
 
   /**
@@ -1109,25 +1626,86 @@ export class EnvironmentsService extends Logger {
   }
 
   /**
+   * Move an environment file to a folder
+   *
+   * @param environmentUUID
+   */
+  public moveEnvironmentFileToFolder(environmentUUID: string) {
+    const settings = this.store.get('settings');
+    const environmentInfo = settings.environments.find(
+      (environment) => environment.uuid === environmentUUID
+    );
+
+    // prefill dialog with current environment folder and filename
+    return this.dialogsService
+      .showSaveDialog('Choose a folder', true, environmentInfo.path)
+      .pipe(
+        switchMap((filePath) => {
+          if (!filePath) {
+            return EMPTY;
+          }
+
+          if (
+            this.store
+              .get('settings')
+              .environments.find(
+                (environmentItem) => environmentItem.path === filePath
+              ) !== undefined
+          ) {
+            return throwError(() => 'ENVIRONMENT_FILE_IN_USE');
+          }
+
+          return zip(
+            of(filePath),
+            from(MainAPI.invoke('APP_GET_FILENAME', filePath))
+          );
+        }),
+        catchError((errorCode) => {
+          this.logMessage('error', errorCode as MessageCodes);
+
+          return EMPTY;
+        }),
+        tap(([filePath]) => {
+          this.store.update(
+            updateSettingsAction({
+              environments: settings.environments.map((environment) => {
+                if (environment.uuid === environmentUUID) {
+                  return {
+                    uuid: environmentUUID,
+                    path: filePath
+                  };
+                }
+
+                return environment;
+              })
+            })
+          );
+
+          // trigger a save to update the environment file, otherwise file will be created only during next modification
+          this.store.update(refreshEnvironmentAction(environmentUUID));
+
+          this.logMessage('info', 'ENVIRONMENT_MOVED', {
+            environmentUUID
+          });
+        })
+      );
+  }
+
+  /**
    * Copy an environment JSON to the clipboard
    *
    * @param environmentUUID
    */
   public copyEnvironmentToClipboard(environmentUUID: string) {
-    this.logMessage('info', 'COPY_ENVIRONMENT_CLIPBOARD', {
-      environmentUUID
-    });
-
     const environment = this.store.getEnvironmentByUUID(environmentUUID);
 
     try {
       MainAPI.send('APP_WRITE_CLIPBOARD', JSON.stringify(environment, null, 4));
 
-      this.logMessage('info', 'COPY_ENVIRONMENT_CLIPBOARD_SUCCESS', {
-        environmentUUID
-      });
+      this.logMessage('info', 'COPY_ENVIRONMENT_CLIPBOARD_SUCCESS');
     } catch (error) {
       this.logMessage('error', 'COPY_ENVIRONMENT_CLIPBOARD_ERROR', {
+        environmentUUID,
         error
       });
     }
@@ -1139,23 +1717,99 @@ export class EnvironmentsService extends Logger {
    * @param routeUUID
    */
   public copyRouteToClipboard(routeUUID: string) {
-    this.logMessage('info', 'COPY_ENVIRONMENT_CLIPBOARD', {
-      routeUUID
-    });
-
     const route = this.store.getRouteByUUID(routeUUID);
 
     try {
       MainAPI.send('APP_WRITE_CLIPBOARD', JSON.stringify(route, null, 4));
 
-      this.logMessage('info', 'COPY_ROUTE_CLIPBOARD_SUCCESS', {
-        routeUUID
-      });
+      this.logMessage('info', 'COPY_ROUTE_CLIPBOARD_SUCCESS');
     } catch (error) {
       this.logMessage('error', 'COPY_ROUTE_CLIPBOARD_ERROR', {
+        routeUUID,
         error
       });
     }
+  }
+
+  /**
+   * Listen to server transactions and record them
+   *
+   * @returns
+   */
+  public listenServerTransactions() {
+    return this.eventsService.serverTransaction$.pipe(
+      tap((data) => {
+        const formattedLog = this.dataService.formatLog(data.transaction);
+
+        this.store.update(logRequestAction(data.environmentUUID, formattedLog));
+
+        if (
+          this.eventsService.logsRecording$.value[data.environmentUUID] === true
+        ) {
+          this.createRouteFromLog(data.environmentUUID, formattedLog.UUID);
+        }
+      })
+    );
+  }
+
+  public startRecording(environmentUuid: string) {
+    this.eventsService.logsRecording$.next({
+      ...this.eventsService.logsRecording$.value,
+      [environmentUuid]: true
+    });
+
+    const environmentsStatus = this.store.get('environmentsStatus');
+    const activeEnvironmentStatus = environmentsStatus[environmentUuid];
+
+    if (!activeEnvironmentStatus.running) {
+      this.toggleEnvironment(environmentUuid);
+    }
+  }
+
+  public stopRecording(environmentUuid: string) {
+    this.eventsService.logsRecording$.next({
+      ...this.eventsService.logsRecording$.value,
+      [environmentUuid]: false
+    });
+  }
+
+  public isRecording(environmentUuid: string) {
+    return this.eventsService.logsRecording$.value[environmentUuid];
+  }
+
+  public addEnvironmentHeader() {
+    const activeEnvironment = this.store.getActiveEnvironment();
+
+    this.store.update(
+      updateEnvironmentAction(activeEnvironment.uuid, {
+        headers: [...activeEnvironment.headers, BuildHeader()]
+      }),
+      // force as it is not a UI update
+      true
+    );
+  }
+
+  /**
+   * Add a new route response header and save it in the store
+   * Currently used by the command palette, otherwise a header update is UI driven
+   */
+  public addRouteResponseHeader() {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    const activeRoute = this.store.getActiveRoute();
+    const activeRouteResponse = this.store.getActiveRouteResponse();
+
+    this.store.update(
+      updateRouteResponseAction(
+        activeEnvironment.uuid,
+        activeRoute.uuid,
+        activeRouteResponse.uuid,
+        {
+          headers: [...activeRouteResponse.headers, BuildHeader()]
+        }
+      ),
+      // force as it is not a UI update
+      true
+    );
   }
 
   /**
@@ -1166,46 +1820,25 @@ export class EnvironmentsService extends Logger {
    * @returns
    */
   private verifyData(environment: Environment): Observable<Environment> {
+    if (!environment || typeof environment !== 'object') {
+      this.logMessage('error', 'ENVIRONMENT_INVALID');
+
+      return EMPTY;
+    }
+
     if (environment.lastMigration > HighestMigrationId) {
       this.logMessage('info', 'ENVIRONMENT_MORE_RECENT_VERSION', {
-        name: environment.name,
-        uuid: environment.uuid
+        environmentName: environment.name,
+        environmentUUID: environment.uuid
       });
 
       return EMPTY;
     }
 
-    if (IsLegacyExportData(environment)) {
-      const confirmImport$ = new Subject<boolean>();
-
-      this.eventsService.confirmModalEvents.next({
-        title: 'Legacy export format detected',
-        text: 'This content seems to be in an old export format.',
-        sub: 'Mockoon will attempt to migrate the content, which may be altered and overwritten.',
-        subIcon: 'warning',
-        subIconClass: 'text-warning',
-        confirmed$: confirmImport$
-      });
-
-      return confirmImport$.pipe(
-        switchMap((confirmed) => {
-          if (confirmed) {
-            const unwrappedEnvironments = UnwrapLegacyExport(environment);
-
-            if (unwrappedEnvironments.length) {
-              return of(unwrappedEnvironments[0]);
-            }
-          }
-
-          return EMPTY;
-        })
-      );
-    }
-
     if (environment.lastMigration === undefined) {
       const confirmed$ = new Subject<boolean>();
 
-      this.eventsService.confirmModalEvents.next({
+      this.eventsService.confirmModalPayload$.next({
         title: 'Confirm opening',
         text: 'This content does not seem to be a valid Mockoon environment. Open it anyway?',
         sub: 'Mockoon will attempt to migrate and repair the content, which may be altered and overwritten.',
@@ -1213,6 +1846,7 @@ export class EnvironmentsService extends Logger {
         subIconClass: 'text-warning',
         confirmed$
       });
+      this.uiService.openModal('confirm');
 
       return confirmed$.pipe(
         switchMap((confirmed) => (confirmed ? of(environment) : EMPTY))
@@ -1237,7 +1871,5 @@ export class EnvironmentsService extends Logger {
         filePath
       })
     );
-
-    this.uiService.scrollEnvironmentsMenu.next(ScrollDirection.BOTTOM);
   }
 }

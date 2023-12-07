@@ -1,31 +1,33 @@
-import { flags } from '@oclif/command';
+import { Flags } from '@oclif/core';
 
-export const commonFlags = {
-  help: flags.help({ char: 'h' })
+// Keep deprecated flags for backward compatibility
+export const deprecatedFlags = {
+  pname: Flags.string({
+    char: 'N',
+    required: false,
+    default: [],
+    multiple: true,
+    hidden: true
+  }),
+  'daemon-off': Flags.boolean({
+    char: 'D',
+    required: false,
+    default: false,
+    hidden: true
+  })
 };
 
-export const startFlags = {
-  data: flags.string({
-    char: 'd',
-    description: 'Path(s) or URL(s) to your Mockoon data file(s)',
-    required: true,
-    multiple: true
-  }),
-  port: flags.integer({
-    char: 'p',
-    description: 'Override environment(s) port(s)',
-    multiple: true,
-    default: []
-  }),
-  'log-transaction': flags.boolean({
+export const commonFlags = {
+  help: Flags.help({ char: 'h' }),
+  'log-transaction': Flags.boolean({
     char: 't',
     description: 'Log the full HTTP transaction (request and response)',
     default: false
   }),
-  repair: flags.boolean({
-    char: 'r',
-    description:
-      'If the data file seems too old, or an invalid Mockoon file, migrate/repair without prompting',
-    default: false
+  data: Flags.string({
+    char: 'd',
+    description: 'Path(s) or URL(s) to your Mockoon data file(s)',
+    required: true,
+    multiple: true
   })
 };

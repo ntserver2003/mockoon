@@ -1,6 +1,6 @@
 {
   "uuid": "00c259b0-a802-11eb-8344-e578768b170e",
-  "lastMigration": 24,
+  "lastMigration": 32,
   "name": "AWS Server Migration Service",
   "endpointPrefix": "",
   "latency": 0,
@@ -14,7 +14,7 @@
       "responses": [
         {
           "uuid": "00c259b1-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'datatype.number'}},\n    \"totalServers\": {{faker 'datatype.number'}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
+          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'number.int' max=99999}},\n    \"totalServers\": {{faker 'number.int' max=99999}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -27,7 +27,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c0-a802-11eb-8344-e578768b170e",
@@ -44,7 +46,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c1-a802-11eb-8344-e578768b170e",
@@ -61,7 +65,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c2-a802-11eb-8344-e578768b170e",
@@ -78,7 +84,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c3-a802-11eb-8344-e578768b170e",
@@ -95,7 +103,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c4-a802-11eb-8344-e578768b170e",
@@ -112,11 +122,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c280d0-a802-11eb-8344-e578768b170e",
@@ -139,7 +151,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c7-a802-11eb-8344-e578768b170e",
@@ -156,7 +170,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c8-a802-11eb-8344-e578768b170e",
@@ -173,7 +189,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280c9-a802-11eb-8344-e578768b170e",
@@ -190,7 +208,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280ca-a802-11eb-8344-e578768b170e",
@@ -207,7 +227,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280cb-a802-11eb-8344-e578768b170e",
@@ -224,7 +246,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280cc-a802-11eb-8344-e578768b170e",
@@ -241,7 +265,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280cd-a802-11eb-8344-e578768b170e",
@@ -258,7 +284,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280ce-a802-11eb-8344-e578768b170e",
@@ -275,7 +303,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280cf-a802-11eb-8344-e578768b170e",
@@ -292,11 +322,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7d3-a802-11eb-8344-e578768b170e",
@@ -319,7 +351,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280d2-a802-11eb-8344-e578768b170e",
@@ -336,7 +370,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c280d3-a802-11eb-8344-e578768b170e",
@@ -353,7 +389,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d0-a802-11eb-8344-e578768b170e",
@@ -370,7 +408,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d1-a802-11eb-8344-e578768b170e",
@@ -387,7 +427,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d2-a802-11eb-8344-e578768b170e",
@@ -404,11 +446,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7da-a802-11eb-8344-e578768b170e",
@@ -431,7 +475,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d5-a802-11eb-8344-e578768b170e",
@@ -448,7 +494,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d6-a802-11eb-8344-e578768b170e",
@@ -465,7 +513,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d7-a802-11eb-8344-e578768b170e",
@@ -482,7 +532,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d8-a802-11eb-8344-e578768b170e",
@@ -499,7 +551,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7d9-a802-11eb-8344-e578768b170e",
@@ -516,11 +570,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7e1-a802-11eb-8344-e578768b170e",
@@ -543,7 +599,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7dc-a802-11eb-8344-e578768b170e",
@@ -560,7 +618,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7dd-a802-11eb-8344-e578768b170e",
@@ -577,7 +637,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7de-a802-11eb-8344-e578768b170e",
@@ -594,7 +656,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7df-a802-11eb-8344-e578768b170e",
@@ -611,7 +675,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e0-a802-11eb-8344-e578768b170e",
@@ -628,11 +694,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7e8-a802-11eb-8344-e578768b170e",
@@ -655,7 +723,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e3-a802-11eb-8344-e578768b170e",
@@ -672,7 +742,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e4-a802-11eb-8344-e578768b170e",
@@ -689,7 +761,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e5-a802-11eb-8344-e578768b170e",
@@ -706,7 +780,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e6-a802-11eb-8344-e578768b170e",
@@ -723,7 +799,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7e7-a802-11eb-8344-e578768b170e",
@@ -740,11 +818,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7ee-a802-11eb-8344-e578768b170e",
@@ -767,7 +847,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7ea-a802-11eb-8344-e578768b170e",
@@ -784,7 +866,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7eb-a802-11eb-8344-e578768b170e",
@@ -801,7 +885,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7ec-a802-11eb-8344-e578768b170e",
@@ -818,7 +904,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7ed-a802-11eb-8344-e578768b170e",
@@ -835,11 +923,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7f4-a802-11eb-8344-e578768b170e",
@@ -862,7 +952,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f0-a802-11eb-8344-e578768b170e",
@@ -879,7 +971,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f1-a802-11eb-8344-e578768b170e",
@@ -896,7 +990,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f2-a802-11eb-8344-e578768b170e",
@@ -913,7 +1009,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f3-a802-11eb-8344-e578768b170e",
@@ -930,11 +1028,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a7fb-a802-11eb-8344-e578768b170e",
@@ -957,7 +1057,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f6-a802-11eb-8344-e578768b170e",
@@ -974,7 +1076,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f7-a802-11eb-8344-e578768b170e",
@@ -991,7 +1095,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f8-a802-11eb-8344-e578768b170e",
@@ -1008,7 +1114,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7f9-a802-11eb-8344-e578768b170e",
@@ -1025,7 +1133,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7fa-a802-11eb-8344-e578768b170e",
@@ -1042,11 +1152,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a802-a802-11eb-8344-e578768b170e",
@@ -1069,7 +1181,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7fd-a802-11eb-8344-e578768b170e",
@@ -1086,7 +1200,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7fe-a802-11eb-8344-e578768b170e",
@@ -1103,7 +1219,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a7ff-a802-11eb-8344-e578768b170e",
@@ -1120,7 +1238,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a800-a802-11eb-8344-e578768b170e",
@@ -1137,7 +1257,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a801-a802-11eb-8344-e578768b170e",
@@ -1154,11 +1276,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a809-a802-11eb-8344-e578768b170e",
@@ -1168,7 +1292,7 @@
       "responses": [
         {
           "uuid": "00c2a803-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'datatype.number'}},\n    \"totalServers\": {{faker 'datatype.number'}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
+          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'number.int' max=99999}},\n    \"totalServers\": {{faker 'number.int' max=99999}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1181,7 +1305,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a804-a802-11eb-8344-e578768b170e",
@@ -1198,7 +1324,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a805-a802-11eb-8344-e578768b170e",
@@ -1215,7 +1343,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a806-a802-11eb-8344-e578768b170e",
@@ -1232,7 +1362,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a807-a802-11eb-8344-e578768b170e",
@@ -1249,7 +1381,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a808-a802-11eb-8344-e578768b170e",
@@ -1266,11 +1400,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2a810-a802-11eb-8344-e578768b170e",
@@ -1280,7 +1416,7 @@
       "responses": [
         {
           "uuid": "00c2a80a-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"appId\": \"\",\n  \"roleName\": \"\",\n  \"serverGroupLaunchConfigurations\": [\n    {\n      \"serverGroupId\": \"\",\n      \"launchOrder\": {{faker 'datatype.number'}},\n      \"serverLaunchConfigurations\": [\n        {\n          \"server\": {\n            \"serverId\": \"\",\n            \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n            \"vmServer\": {\n              \"vmServerAddress\": {\n                \"vmManagerId\": \"\",\n                \"vmId\": \"\"\n              },\n              \"vmName\": \"\",\n              \"vmManagerName\": \"\",\n              \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n              \"vmPath\": \"\"\n            },\n            \"replicationJobId\": \"\",\n            \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n          },\n          \"logicalId\": \"\",\n          \"vpc\": \"\",\n          \"subnet\": \"\",\n          \"securityGroup\": \"\",\n          \"ec2KeyName\": \"\",\n          \"userData\": {\n            \"s3Location\": {\n              \"bucket\": \"\",\n              \"key\": \"\"\n            }\n          },\n          \"instanceType\": \"\",\n          \"associatePublicIpAddress\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ]\n}",
+          "body": "{\n  \"appId\": \"\",\n  \"roleName\": \"\",\n  \"serverGroupLaunchConfigurations\": [\n    {\n      \"serverGroupId\": \"\",\n      \"launchOrder\": {{faker 'number.int' max=99999}},\n      \"serverLaunchConfigurations\": [\n        {\n          \"server\": {\n            \"serverId\": \"\",\n            \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n            \"vmServer\": {\n              \"vmServerAddress\": {\n                \"vmManagerId\": \"\",\n                \"vmId\": \"\"\n              },\n              \"vmName\": \"\",\n              \"vmManagerName\": \"\",\n              \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n              \"vmPath\": \"\"\n            },\n            \"replicationJobId\": \"\",\n            \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n          },\n          \"logicalId\": \"\",\n          \"vpc\": \"\",\n          \"subnet\": \"\",\n          \"securityGroup\": \"\",\n          \"ec2KeyName\": \"\",\n          \"userData\": {\n            \"s3Location\": {\n              \"bucket\": \"\",\n              \"key\": \"\"\n            }\n          },\n          \"instanceType\": \"\",\n          \"associatePublicIpAddress\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1293,7 +1429,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a80b-a802-11eb-8344-e578768b170e",
@@ -1310,7 +1448,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a80c-a802-11eb-8344-e578768b170e",
@@ -1327,7 +1467,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a80d-a802-11eb-8344-e578768b170e",
@@ -1344,7 +1486,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a80e-a802-11eb-8344-e578768b170e",
@@ -1361,7 +1505,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2a80f-a802-11eb-8344-e578768b170e",
@@ -1378,11 +1524,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cee5-a802-11eb-8344-e578768b170e",
@@ -1392,7 +1540,7 @@
       "responses": [
         {
           "uuid": "00c2a811-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"serverGroupReplicationConfigurations\": [\n    {\n      \"serverGroupId\": \"\",\n      \"serverReplicationConfigurations\": [\n        {\n          \"server\": {\n            \"serverId\": \"\",\n            \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n            \"vmServer\": {\n              \"vmServerAddress\": {\n                \"vmManagerId\": \"\",\n                \"vmId\": \"\"\n              },\n              \"vmName\": \"\",\n              \"vmManagerName\": \"\",\n              \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n              \"vmPath\": \"\"\n            },\n            \"replicationJobId\": \"\",\n            \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n          },\n          \"serverReplicationParameters\": {\n            \"seedTime\": \"{{faker 'date.recent' 365}}\",\n            \"frequency\": {{faker 'datatype.number'}},\n            \"runOnce\": {{faker 'datatype.boolean'}},\n            \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n            \"numberOfRecentAmisToKeep\": {{faker 'datatype.number'}},\n            \"encrypted\": {{faker 'datatype.boolean'}},\n            \"kmsKeyId\": \"\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+          "body": "{\n  \"serverGroupReplicationConfigurations\": [\n    {\n      \"serverGroupId\": \"\",\n      \"serverReplicationConfigurations\": [\n        {\n          \"server\": {\n            \"serverId\": \"\",\n            \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n            \"vmServer\": {\n              \"vmServerAddress\": {\n                \"vmManagerId\": \"\",\n                \"vmId\": \"\"\n              },\n              \"vmName\": \"\",\n              \"vmManagerName\": \"\",\n              \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n              \"vmPath\": \"\"\n            },\n            \"replicationJobId\": \"\",\n            \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n          },\n          \"serverReplicationParameters\": {\n            \"seedTime\": \"{{faker 'date.recent' 365}}\",\n            \"frequency\": {{faker 'number.int' max=99999}},\n            \"runOnce\": {{faker 'datatype.boolean'}},\n            \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n            \"numberOfRecentAmisToKeep\": {{faker 'number.int' max=99999}},\n            \"encrypted\": {{faker 'datatype.boolean'}},\n            \"kmsKeyId\": \"\"\n          }\n        }\n      ]\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1405,7 +1553,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee0-a802-11eb-8344-e578768b170e",
@@ -1422,7 +1572,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee1-a802-11eb-8344-e578768b170e",
@@ -1439,7 +1591,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee2-a802-11eb-8344-e578768b170e",
@@ -1456,7 +1610,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee3-a802-11eb-8344-e578768b170e",
@@ -1473,7 +1629,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee4-a802-11eb-8344-e578768b170e",
@@ -1490,11 +1648,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cee8-a802-11eb-8344-e578768b170e",
@@ -1517,7 +1677,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cee7-a802-11eb-8344-e578768b170e",
@@ -1534,11 +1696,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2ceed-a802-11eb-8344-e578768b170e",
@@ -1548,7 +1712,7 @@
       "responses": [
         {
           "uuid": "00c2cee9-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"replicationJobList\": [\n    {\n      \"replicationJobId\": \"\",\n      \"serverId\": \"\",\n      \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n      \"vmServer\": {\n        \"vmServerAddress\": {\n          \"vmManagerId\": \"\",\n          \"vmId\": \"\"\n        },\n        \"vmName\": \"\",\n        \"vmManagerName\": \"\",\n        \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n        \"vmPath\": \"\"\n      },\n      \"seedReplicationTime\": \"{{faker 'date.recent' 365}}\",\n      \"frequency\": {{faker 'datatype.number'}},\n      \"runOnce\": {{faker 'datatype.boolean'}},\n      \"nextReplicationRunStartTime\": \"{{faker 'date.recent' 365}}\",\n      \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n      \"roleName\": \"\",\n      \"latestAmiId\": \"\",\n      \"state\": \"{{oneOf (array 'PENDING' 'ACTIVE' 'FAILED' 'DELETING' 'DELETED' 'COMPLETED' 'PAUSED_ON_FAILURE' 'FAILING')}}\",\n      \"statusMessage\": \"\",\n      \"description\": \"\",\n      \"numberOfRecentAmisToKeep\": {{faker 'datatype.number'}},\n      \"encrypted\": {{faker 'datatype.boolean'}},\n      \"kmsKeyId\": \"\",\n      \"replicationRunList\": [\n        {\n          \"replicationRunId\": \"\",\n          \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n          \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n          \"stageDetails\": {\n            \"stage\": \"\",\n            \"stageProgress\": \"\"\n          },\n          \"statusMessage\": \"\",\n          \"amiId\": \"\",\n          \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n          \"completedTime\": \"{{faker 'date.recent' 365}}\",\n          \"description\": \"\",\n          \"encrypted\": {{faker 'datatype.boolean'}},\n          \"kmsKeyId\": \"\"\n        }\n      ]\n    }\n  ],\n  \"nextToken\": \"\"\n}",
+          "body": "{\n  \"replicationJobList\": [\n    {\n      \"replicationJobId\": \"\",\n      \"serverId\": \"\",\n      \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n      \"vmServer\": {\n        \"vmServerAddress\": {\n          \"vmManagerId\": \"\",\n          \"vmId\": \"\"\n        },\n        \"vmName\": \"\",\n        \"vmManagerName\": \"\",\n        \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n        \"vmPath\": \"\"\n      },\n      \"seedReplicationTime\": \"{{faker 'date.recent' 365}}\",\n      \"frequency\": {{faker 'number.int' max=99999}},\n      \"runOnce\": {{faker 'datatype.boolean'}},\n      \"nextReplicationRunStartTime\": \"{{faker 'date.recent' 365}}\",\n      \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n      \"roleName\": \"\",\n      \"latestAmiId\": \"\",\n      \"state\": \"{{oneOf (array 'PENDING' 'ACTIVE' 'FAILED' 'DELETING' 'DELETED' 'COMPLETED' 'PAUSED_ON_FAILURE' 'FAILING')}}\",\n      \"statusMessage\": \"\",\n      \"description\": \"\",\n      \"numberOfRecentAmisToKeep\": {{faker 'number.int' max=99999}},\n      \"encrypted\": {{faker 'datatype.boolean'}},\n      \"kmsKeyId\": \"\",\n      \"replicationRunList\": [\n        {\n          \"replicationRunId\": \"\",\n          \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n          \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n          \"stageDetails\": {\n            \"stage\": \"\",\n            \"stageProgress\": \"\"\n          },\n          \"statusMessage\": \"\",\n          \"amiId\": \"\",\n          \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n          \"completedTime\": \"{{faker 'date.recent' 365}}\",\n          \"description\": \"\",\n          \"encrypted\": {{faker 'datatype.boolean'}},\n          \"kmsKeyId\": \"\"\n        }\n      ]\n    }\n  ],\n  \"nextToken\": \"\"\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1561,7 +1725,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2ceea-a802-11eb-8344-e578768b170e",
@@ -1578,7 +1744,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2ceeb-a802-11eb-8344-e578768b170e",
@@ -1595,7 +1763,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2ceec-a802-11eb-8344-e578768b170e",
@@ -1612,11 +1782,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cef2-a802-11eb-8344-e578768b170e",
@@ -1626,7 +1798,7 @@
       "responses": [
         {
           "uuid": "00c2ceee-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"replicationJob\": {\n    \"replicationJobId\": \"\",\n    \"serverId\": \"\",\n    \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n    \"vmServer\": {\n      \"vmServerAddress\": {\n        \"vmManagerId\": \"\",\n        \"vmId\": \"\"\n      },\n      \"vmName\": \"\",\n      \"vmManagerName\": \"\",\n      \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n      \"vmPath\": \"\"\n    },\n    \"seedReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"frequency\": {{faker 'datatype.number'}},\n    \"runOnce\": {{faker 'datatype.boolean'}},\n    \"nextReplicationRunStartTime\": \"{{faker 'date.recent' 365}}\",\n    \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n    \"roleName\": \"\",\n    \"latestAmiId\": \"\",\n    \"state\": \"{{oneOf (array 'PENDING' 'ACTIVE' 'FAILED' 'DELETING' 'DELETED' 'COMPLETED' 'PAUSED_ON_FAILURE' 'FAILING')}}\",\n    \"statusMessage\": \"\",\n    \"description\": \"\",\n    \"numberOfRecentAmisToKeep\": {{faker 'datatype.number'}},\n    \"encrypted\": {{faker 'datatype.boolean'}},\n    \"kmsKeyId\": \"\",\n    \"replicationRunList\": [\n      {\n        \"replicationRunId\": \"\",\n        \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n        \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n        \"stageDetails\": {\n          \"stage\": \"\",\n          \"stageProgress\": \"\"\n        },\n        \"statusMessage\": \"\",\n        \"amiId\": \"\",\n        \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n        \"completedTime\": \"{{faker 'date.recent' 365}}\",\n        \"description\": \"\",\n        \"encrypted\": {{faker 'datatype.boolean'}},\n        \"kmsKeyId\": \"\"\n      }\n    ]\n  },\n  \"replicationRunList\": [\n    {\n      \"replicationRunId\": \"\",\n      \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n      \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n      \"stageDetails\": {\n        \"stage\": \"\",\n        \"stageProgress\": \"\"\n      },\n      \"statusMessage\": \"\",\n      \"amiId\": \"\",\n      \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n      \"completedTime\": \"{{faker 'date.recent' 365}}\",\n      \"description\": \"\",\n      \"encrypted\": {{faker 'datatype.boolean'}},\n      \"kmsKeyId\": \"\"\n    }\n  ],\n  \"nextToken\": \"\"\n}",
+          "body": "{\n  \"replicationJob\": {\n    \"replicationJobId\": \"\",\n    \"serverId\": \"\",\n    \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n    \"vmServer\": {\n      \"vmServerAddress\": {\n        \"vmManagerId\": \"\",\n        \"vmId\": \"\"\n      },\n      \"vmName\": \"\",\n      \"vmManagerName\": \"\",\n      \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n      \"vmPath\": \"\"\n    },\n    \"seedReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"frequency\": {{faker 'number.int' max=99999}},\n    \"runOnce\": {{faker 'datatype.boolean'}},\n    \"nextReplicationRunStartTime\": \"{{faker 'date.recent' 365}}\",\n    \"licenseType\": \"{{oneOf (array 'AWS' 'BYOL')}}\",\n    \"roleName\": \"\",\n    \"latestAmiId\": \"\",\n    \"state\": \"{{oneOf (array 'PENDING' 'ACTIVE' 'FAILED' 'DELETING' 'DELETED' 'COMPLETED' 'PAUSED_ON_FAILURE' 'FAILING')}}\",\n    \"statusMessage\": \"\",\n    \"description\": \"\",\n    \"numberOfRecentAmisToKeep\": {{faker 'number.int' max=99999}},\n    \"encrypted\": {{faker 'datatype.boolean'}},\n    \"kmsKeyId\": \"\",\n    \"replicationRunList\": [\n      {\n        \"replicationRunId\": \"\",\n        \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n        \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n        \"stageDetails\": {\n          \"stage\": \"\",\n          \"stageProgress\": \"\"\n        },\n        \"statusMessage\": \"\",\n        \"amiId\": \"\",\n        \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n        \"completedTime\": \"{{faker 'date.recent' 365}}\",\n        \"description\": \"\",\n        \"encrypted\": {{faker 'datatype.boolean'}},\n        \"kmsKeyId\": \"\"\n      }\n    ]\n  },\n  \"replicationRunList\": [\n    {\n      \"replicationRunId\": \"\",\n      \"state\": \"{{oneOf (array 'PENDING' 'MISSED' 'ACTIVE' 'FAILED' 'COMPLETED' 'DELETING' 'DELETED')}}\",\n      \"type\": \"{{oneOf (array 'ON_DEMAND' 'AUTOMATIC')}}\",\n      \"stageDetails\": {\n        \"stage\": \"\",\n        \"stageProgress\": \"\"\n      },\n      \"statusMessage\": \"\",\n      \"amiId\": \"\",\n      \"scheduledStartTime\": \"{{faker 'date.recent' 365}}\",\n      \"completedTime\": \"{{faker 'date.recent' 365}}\",\n      \"description\": \"\",\n      \"encrypted\": {{faker 'datatype.boolean'}},\n      \"kmsKeyId\": \"\"\n    }\n  ],\n  \"nextToken\": \"\"\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1639,7 +1811,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2ceef-a802-11eb-8344-e578768b170e",
@@ -1656,7 +1830,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef0-a802-11eb-8344-e578768b170e",
@@ -1673,7 +1849,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef1-a802-11eb-8344-e578768b170e",
@@ -1690,11 +1868,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cef5-a802-11eb-8344-e578768b170e",
@@ -1717,7 +1897,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef4-a802-11eb-8344-e578768b170e",
@@ -1734,11 +1916,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cefc-a802-11eb-8344-e578768b170e",
@@ -1761,7 +1945,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef7-a802-11eb-8344-e578768b170e",
@@ -1778,7 +1964,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef8-a802-11eb-8344-e578768b170e",
@@ -1795,7 +1983,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cef9-a802-11eb-8344-e578768b170e",
@@ -1812,7 +2002,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cefa-a802-11eb-8344-e578768b170e",
@@ -1829,7 +2021,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cefb-a802-11eb-8344-e578768b170e",
@@ -1846,11 +2040,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cf03-a802-11eb-8344-e578768b170e",
@@ -1873,7 +2069,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cefe-a802-11eb-8344-e578768b170e",
@@ -1890,7 +2088,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2ceff-a802-11eb-8344-e578768b170e",
@@ -1907,7 +2107,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf00-a802-11eb-8344-e578768b170e",
@@ -1924,7 +2126,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf01-a802-11eb-8344-e578768b170e",
@@ -1941,7 +2145,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf02-a802-11eb-8344-e578768b170e",
@@ -1958,11 +2164,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cf0a-a802-11eb-8344-e578768b170e",
@@ -1972,7 +2180,7 @@
       "responses": [
         {
           "uuid": "00c2cf04-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"apps\": [\n    {\n      \"appId\": \"\",\n      \"name\": \"\",\n      \"description\": \"\",\n      \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n      \"statusMessage\": \"\",\n      \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n      \"replicationStatusMessage\": \"\",\n      \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n      \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n      \"launchStatusMessage\": \"\",\n      \"launchDetails\": {\n        \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n        \"stackName\": \"\",\n        \"stackId\": \"\"\n      },\n      \"creationTime\": \"{{faker 'date.recent' 365}}\",\n      \"lastModified\": \"{{faker 'date.recent' 365}}\",\n      \"roleName\": \"\",\n      \"totalServerGroups\": {{faker 'datatype.number'}},\n      \"totalServers\": {{faker 'datatype.number'}}\n    }\n  ],\n  \"nextToken\": \"\"\n}",
+          "body": "{\n  \"apps\": [\n    {\n      \"appId\": \"\",\n      \"name\": \"\",\n      \"description\": \"\",\n      \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n      \"statusMessage\": \"\",\n      \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n      \"replicationStatusMessage\": \"\",\n      \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n      \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n      \"launchStatusMessage\": \"\",\n      \"launchDetails\": {\n        \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n        \"stackName\": \"\",\n        \"stackId\": \"\"\n      },\n      \"creationTime\": \"{{faker 'date.recent' 365}}\",\n      \"lastModified\": \"{{faker 'date.recent' 365}}\",\n      \"roleName\": \"\",\n      \"totalServerGroups\": {{faker 'number.int' max=99999}},\n      \"totalServers\": {{faker 'number.int' max=99999}}\n    }\n  ],\n  \"nextToken\": \"\"\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -1985,7 +2193,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf05-a802-11eb-8344-e578768b170e",
@@ -2002,7 +2212,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf06-a802-11eb-8344-e578768b170e",
@@ -2019,7 +2231,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf07-a802-11eb-8344-e578768b170e",
@@ -2036,7 +2250,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf08-a802-11eb-8344-e578768b170e",
@@ -2053,7 +2269,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf09-a802-11eb-8344-e578768b170e",
@@ -2070,11 +2288,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2cf11-a802-11eb-8344-e578768b170e",
@@ -2097,7 +2317,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf0c-a802-11eb-8344-e578768b170e",
@@ -2114,7 +2336,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf0d-a802-11eb-8344-e578768b170e",
@@ -2131,7 +2355,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf0e-a802-11eb-8344-e578768b170e",
@@ -2148,7 +2374,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf0f-a802-11eb-8344-e578768b170e",
@@ -2165,7 +2393,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf10-a802-11eb-8344-e578768b170e",
@@ -2182,11 +2412,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f5f4-a802-11eb-8344-e578768b170e",
@@ -2209,7 +2441,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2cf13-a802-11eb-8344-e578768b170e",
@@ -2226,7 +2460,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f0-a802-11eb-8344-e578768b170e",
@@ -2243,7 +2479,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f1-a802-11eb-8344-e578768b170e",
@@ -2260,7 +2498,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f2-a802-11eb-8344-e578768b170e",
@@ -2277,7 +2517,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f3-a802-11eb-8344-e578768b170e",
@@ -2294,11 +2536,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f5fb-a802-11eb-8344-e578768b170e",
@@ -2321,7 +2565,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f6-a802-11eb-8344-e578768b170e",
@@ -2338,7 +2584,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f7-a802-11eb-8344-e578768b170e",
@@ -2355,7 +2603,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f8-a802-11eb-8344-e578768b170e",
@@ -2372,7 +2622,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5f9-a802-11eb-8344-e578768b170e",
@@ -2389,7 +2641,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5fa-a802-11eb-8344-e578768b170e",
@@ -2406,11 +2660,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f602-a802-11eb-8344-e578768b170e",
@@ -2433,7 +2689,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5fd-a802-11eb-8344-e578768b170e",
@@ -2450,7 +2708,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5fe-a802-11eb-8344-e578768b170e",
@@ -2467,7 +2727,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f5ff-a802-11eb-8344-e578768b170e",
@@ -2484,7 +2746,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f600-a802-11eb-8344-e578768b170e",
@@ -2501,7 +2765,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f601-a802-11eb-8344-e578768b170e",
@@ -2518,11 +2784,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f609-a802-11eb-8344-e578768b170e",
@@ -2545,7 +2813,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f604-a802-11eb-8344-e578768b170e",
@@ -2562,7 +2832,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f605-a802-11eb-8344-e578768b170e",
@@ -2579,7 +2851,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f606-a802-11eb-8344-e578768b170e",
@@ -2596,7 +2870,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f607-a802-11eb-8344-e578768b170e",
@@ -2613,7 +2889,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f608-a802-11eb-8344-e578768b170e",
@@ -2630,11 +2908,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f610-a802-11eb-8344-e578768b170e",
@@ -2657,7 +2937,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f60b-a802-11eb-8344-e578768b170e",
@@ -2674,7 +2956,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f60c-a802-11eb-8344-e578768b170e",
@@ -2691,7 +2975,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f60d-a802-11eb-8344-e578768b170e",
@@ -2708,7 +2994,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f60e-a802-11eb-8344-e578768b170e",
@@ -2725,7 +3013,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f60f-a802-11eb-8344-e578768b170e",
@@ -2742,11 +3032,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f617-a802-11eb-8344-e578768b170e",
@@ -2756,7 +3048,7 @@
       "responses": [
         {
           "uuid": "00c2f611-a802-11eb-8344-e578768b170e",
-          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'datatype.number'}},\n    \"totalServers\": {{faker 'datatype.number'}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
+          "body": "{\n  \"appSummary\": {\n    \"appId\": \"\",\n    \"name\": \"\",\n    \"description\": \"\",\n    \"status\": \"{{oneOf (array 'CREATING' 'ACTIVE' 'UPDATING' 'DELETING' 'DELETED' 'DELETE_FAILED')}}\",\n    \"statusMessage\": \"\",\n    \"replicationStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_REPLICATION' 'VALIDATION_IN_PROGRESS' 'REPLICATION_PENDING' 'REPLICATION_IN_PROGRESS' 'REPLICATED' 'DELTA_REPLICATION_IN_PROGRESS' 'DELTA_REPLICATED' 'DELTA_REPLICATION_FAILED' 'REPLICATION_FAILED' 'REPLICATION_STOPPING' 'REPLICATION_STOP_FAILED' 'REPLICATION_STOPPED')}}\",\n    \"replicationStatusMessage\": \"\",\n    \"latestReplicationTime\": \"{{faker 'date.recent' 365}}\",\n    \"launchStatus\": \"{{oneOf (array 'READY_FOR_CONFIGURATION' 'CONFIGURATION_IN_PROGRESS' 'CONFIGURATION_INVALID' 'READY_FOR_LAUNCH' 'VALIDATION_IN_PROGRESS' 'LAUNCH_PENDING' 'LAUNCH_IN_PROGRESS' 'LAUNCHED' 'DELTA_LAUNCH_IN_PROGRESS' 'DELTA_LAUNCH_FAILED' 'LAUNCH_FAILED' 'TERMINATE_IN_PROGRESS' 'TERMINATE_FAILED' 'TERMINATED')}}\",\n    \"launchStatusMessage\": \"\",\n    \"launchDetails\": {\n      \"latestLaunchTime\": \"{{faker 'date.recent' 365}}\",\n      \"stackName\": \"\",\n      \"stackId\": \"\"\n    },\n    \"creationTime\": \"{{faker 'date.recent' 365}}\",\n    \"lastModified\": \"{{faker 'date.recent' 365}}\",\n    \"roleName\": \"\",\n    \"totalServerGroups\": {{faker 'number.int' max=99999}},\n    \"totalServers\": {{faker 'number.int' max=99999}}\n  },\n  \"serverGroups\": [\n    {\n      \"serverGroupId\": \"\",\n      \"name\": \"\",\n      \"serverList\": [\n        {\n          \"serverId\": \"\",\n          \"serverType\": \"{{oneOf (array 'VIRTUAL_MACHINE')}}\",\n          \"vmServer\": {\n            \"vmServerAddress\": {\n              \"vmManagerId\": \"\",\n              \"vmId\": \"\"\n            },\n            \"vmName\": \"\",\n            \"vmManagerName\": \"\",\n            \"vmManagerType\": \"{{oneOf (array 'VSPHERE' 'SCVMM' 'HYPERV-MANAGER')}}\",\n            \"vmPath\": \"\"\n          },\n          \"replicationJobId\": \"\",\n          \"replicationJobTerminated\": {{faker 'datatype.boolean'}}\n        }\n      ]\n    }\n  ],\n  \"tags\": [\n    {\n      \"key\": \"\",\n      \"value\": \"\"\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -2769,7 +3061,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f612-a802-11eb-8344-e578768b170e",
@@ -2786,7 +3080,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f613-a802-11eb-8344-e578768b170e",
@@ -2803,7 +3099,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f614-a802-11eb-8344-e578768b170e",
@@ -2820,7 +3118,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f615-a802-11eb-8344-e578768b170e",
@@ -2837,7 +3137,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f616-a802-11eb-8344-e578768b170e",
@@ -2854,11 +3156,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     },
     {
       "uuid": "00c2f621-a802-11eb-8344-e578768b170e",
@@ -2881,7 +3185,9 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f619-a802-11eb-8344-e578768b170e",
@@ -2898,7 +3204,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61a-a802-11eb-8344-e578768b170e",
@@ -2915,7 +3223,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61b-a802-11eb-8344-e578768b170e",
@@ -2932,7 +3242,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61c-a802-11eb-8344-e578768b170e",
@@ -2949,7 +3261,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61d-a802-11eb-8344-e578768b170e",
@@ -2966,7 +3280,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61e-a802-11eb-8344-e578768b170e",
@@ -2983,7 +3299,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f61f-a802-11eb-8344-e578768b170e",
@@ -3000,7 +3318,9 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         },
         {
           "uuid": "00c2f620-a802-11eb-8344-e578768b170e",
@@ -3017,11 +3337,13 @@
           "fallbackTo404": false,
           "default": false,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "enabled": true,
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     }
   ],
   "proxyMode": false,
@@ -3031,7 +3353,7 @@
   "proxyReqHeaders": [{ "key": "", "value": "" }],
   "proxyResHeaders": [{ "key": "", "value": "" }],
   "proxyRemovePrefix": false,
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "tlsOptions": {
     "enabled": false,
     "type": "CERT",
@@ -3041,5 +3363,37 @@
     "caPath": "",
     "passphrase": ""
   },
-  "data": []
+  "data": [],
+  "folders": [],
+  "rootChildren": [
+    { "type": "route", "uuid": "00c280c5-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c280d0-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7d3-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7da-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7e1-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7e8-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7ee-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7f4-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a7fb-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a802-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a809-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2a810-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cee5-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cee8-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2ceed-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cef2-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cef5-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cefc-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cf03-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cf0a-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2cf11-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f5f4-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f5fb-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f602-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f609-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f610-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f617-a802-11eb-8344-e578768b170e" },
+    { "type": "route", "uuid": "00c2f621-a802-11eb-8344-e578768b170e" }
+  ],
+  "callbacks": []
 }

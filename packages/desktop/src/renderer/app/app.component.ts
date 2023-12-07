@@ -1,17 +1,13 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   HostListener,
-  OnInit,
-  ViewChild
+  OnInit
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Environment } from '@mockoon/commons';
-import { from, Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, from, tap } from 'rxjs';
 import { Logger } from 'src/renderer/app/classes/logger';
-import { ChangelogModalComponent } from 'src/renderer/app/components/modals/changelog-modal/changelog-modal.component';
-import { SettingsModalComponent } from 'src/renderer/app/components/modals/settings-modal/settings-modal.component';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { FocusableInputs } from 'src/renderer/app/enums/ui.enum';
 import { BuildFullPath } from 'src/renderer/app/libs/utils.lib';
@@ -27,18 +23,16 @@ import { SettingsService } from 'src/renderer/app/services/settings.service';
 import { TelemetryService } from 'src/renderer/app/services/telemetry.service';
 import { ToastsService } from 'src/renderer/app/services/toasts.service';
 import { UIService } from 'src/renderer/app/services/ui.service';
+import { UserService } from 'src/renderer/app/services/user.service';
 import { Store } from 'src/renderer/app/stores/store';
+import { environment } from 'src/renderer/environments/environment';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent extends Logger implements OnInit, AfterViewInit {
-  @ViewChild('changelogModal')
-  public changelogModal: ChangelogModalComponent;
-  @ViewChild('settingsModal')
-  public settingsModal: SettingsModalComponent;
+export class AppComponent extends Logger implements OnInit {
   public activeEnvironment$: Observable<Environment>;
   public activeView$: Observable<ViewsNameType>;
   public scrollToBottom = this.uiService.scrollToBottom;
@@ -54,14 +48,18 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
     private uiService: UIService,
     private apiService: ApiService,
     private settingsService: SettingsService,
-    private appQuitService: AppQuitService
+    private appQuitService: AppQuitService,
+    private userService: UserService,
+    private title: Title
   ) {
-    super('[COMPONENT][APP]', toastService);
+    super('[RENDERER][COMPONENT][APP] ', toastService);
+
     this.settingsService.monitorSettings().subscribe();
     this.settingsService.loadSettings().subscribe();
     this.settingsService.saveSettings().subscribe();
     this.environmentsService.loadEnvironments().subscribe();
     this.environmentsService.saveEnvironments().subscribe();
+    this.environmentsService.listenServerTransactions().subscribe();
   }
 
   @HostListener('document:click')
@@ -70,23 +68,37 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
   }
 
   @HostListener('document:keydown', ['$event'])
-  public focusRouteFilterInput(event: KeyboardEvent) {
+  public focusFilterInput(event: KeyboardEvent) {
     if (
       ((event.ctrlKey && this.os !== 'darwin') ||
         (event.metaKey && this.os === 'darwin')) &&
       event.shiftKey &&
       event.key.toLowerCase() === 'f'
     ) {
-      if (this.store.get('activeView') === 'ENV_ROUTES') {
+      if (this.uiService.getModalInstance('templates')) {
+        this.eventsService.focusInput.next(FocusableInputs.TEMPLATES_FILTER);
+      } else if (this.store.get('activeView') === 'ENV_ROUTES') {
         this.eventsService.focusInput.next(FocusableInputs.ROUTE_FILTER);
       } else if (this.store.get('activeView') === 'ENV_DATABUCKETS') {
         this.eventsService.focusInput.next(FocusableInputs.DATABUCKET_FILTER);
+      } else if (this.store.get('activeView') === 'ENV_CALLBACKS') {
+        this.eventsService.focusInput.next(FocusableInputs.CALLBACK_FILTER);
       }
+    }
+
+    if (
+      ((event.ctrlKey && this.os !== 'darwin') ||
+        (event.metaKey && this.os === 'darwin')) &&
+      event.key.toLowerCase() === 'p'
+    ) {
+      this.uiService.openModal('commandPalette');
     }
   }
 
   ngOnInit() {
     this.appQuitService.init().subscribe();
+    this.userService.init().subscribe();
+    this.apiService.init();
 
     this.logMessage('info', 'INITIALIZING_APP');
 
@@ -100,13 +112,17 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
 
     this.telemetryService.init().subscribe();
 
-    this.activeEnvironment$ = this.store.selectActiveEnvironment();
+    this.activeEnvironment$ = this.store.selectActiveEnvironment().pipe(
+      tap((activeEnvironment) => {
+        this.title.setTitle(
+          `${environment.production ? '' : ' [DEV]'}Mockoon${
+            activeEnvironment ? ' - ' + activeEnvironment.name : ''
+          }`
+        );
+      })
+    );
     this.activeView$ = this.store.select('activeView');
     this.toasts$ = this.store.select('toasts');
-  }
-
-  ngAfterViewInit() {
-    this.apiService.init(this.changelogModal, this.settingsModal);
   }
 
   /**
@@ -125,13 +141,18 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
     switch (payload.action) {
       case 'duplicate':
         if (payload.subject === 'route') {
-          this.environmentsService.duplicateRoute(payload.subjectUUID);
+          this.environmentsService.duplicateRoute(
+            payload.parentId,
+            payload.subjectUUID
+          );
         } else if (payload.subject === 'environment') {
           this.environmentsService
             .duplicateEnvironment(payload.subjectUUID)
             .subscribe();
         } else if (payload.subject === 'databucket') {
           this.environmentsService.duplicateDatabucket(payload.subjectUUID);
+        } else if (payload.subject === 'callback') {
+          this.environmentsService.duplicateCallback(payload.subjectUUID);
         }
         break;
       case 'copyJSON':
@@ -148,6 +169,25 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
           this.environmentsService.removeRoute(payload.subjectUUID);
         } else if (payload.subject === 'databucket') {
           this.environmentsService.removeDatabucket(payload.subjectUUID);
+        } else if (payload.subject === 'folder') {
+          this.environmentsService.removeFolder(payload.subjectUUID);
+        } else if (payload.subject === 'callback') {
+          this.environmentsService.removeCallback(payload.subjectUUID);
+        }
+        break;
+      case 'add_crud_route':
+        if (payload.subject === 'folder') {
+          this.environmentsService.addCRUDRoute(payload.subjectUUID);
+        }
+        break;
+      case 'add_http_route':
+        if (payload.subject === 'folder') {
+          this.environmentsService.addHTTPRoute(payload.subjectUUID);
+        }
+        break;
+      case 'add_folder':
+        if (payload.subject === 'folder') {
+          this.environmentsService.addFolder(payload.subjectUUID);
         }
         break;
       case 'close':
@@ -157,7 +197,7 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
         break;
       case 'toggle':
         if (payload.subject === 'route') {
-          this.toggleRoute(payload.subjectUUID);
+          this.environmentsService.toggleRoute(payload.subjectUUID);
         }
         break;
       case 'duplicateToEnv':
@@ -171,6 +211,13 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
           this.environmentsService.showEnvironmentFileInFolder(
             payload.subjectUUID
           );
+        }
+        break;
+      case 'move':
+        if (payload.subject === 'environment') {
+          this.environmentsService
+            .moveEnvironmentFileToFolder(payload.subjectUUID)
+            .subscribe();
         }
         break;
     }
@@ -217,18 +264,11 @@ export class AppComponent extends Logger implements OnInit, AfterViewInit {
   }
 
   /**
-   * Enable/disable a route
-   */
-  private toggleRoute(routeUUID?: string) {
-    this.environmentsService.toggleRoute(routeUUID);
-  }
-
-  /**
    * Trigger entity movement flow
    */
   private startEntityDuplicationToAnotherEnvironment(
     subjectUUID: string,
-    subject: string
+    subject: DataSubject
   ) {
     this.environmentsService.startEntityDuplicationToAnotherEnvironment(
       subjectUUID,

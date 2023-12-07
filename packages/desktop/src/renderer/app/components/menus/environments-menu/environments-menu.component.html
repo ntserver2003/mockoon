@@ -1,13 +1,13 @@
-<div class="environments-menu d-flex flex-column h-100" appMousedragDeadzone>
+<div class="environments-menu d-flex flex-column h-100">
   <div>
-    <ul class="nav menu-header d-flex justify-content-end">
+    <ul class="nav d-flex justify-content-end">
       <li class="nav-item">
         <a
           class="nav-link text-primary add-environment"
           (click)="addEnvironment()"
           ngbTooltip="New environment"
         >
-          <app-svg icon="post_add"></app-svg>
+          <app-svg icon="note_add"></app-svg>
         </a>
       </li>
       <li class="nav-item">
@@ -21,103 +21,105 @@
       </li>
     </ul>
   </div>
-  <ul
-    class="nav flex-column flex-fill menu-list"
-    #environmentsMenu
-    cdkDropList
-    (cdkDropListDropped)="reorderEnvironments($event)"
-  >
+  <ul class="nav flex-column flex-fill menu-list">
     <ng-container *ngIf="environments$ | async as environments">
       <ng-container *ngIf="activeEnvironment$ | async as activeEnvironment">
         <ng-container *ngIf="environmentsStatus$ | async as environmentsStatus">
           <li
-            *ngFor="let environment of environments"
+            *ngFor="let environment of environments; trackBy: trackByUuid"
             class="nav-item"
-            cdkDrag
-            [cdkDragDisabled]="dragDisabled"
-            cdkDragLockAxis="y"
-            cdkDragBoundary=".environments-menu .nav.menu-list"
+            appDraggable
+            appDropzone
+            dragContainer="environments"
+            [dragEnabled]="dragEnabled"
+            dragParentId="root"
+            [dragIsContainer]="false"
+            [dragId]="environment.uuid"
+            (dropped)="reorganizeEnvironments($event)"
           >
             <a
-              class="nav-link"
+              class="nav-link d-flex"
               [ngClass]="{
                 active: activeEnvironment?.uuid === environment.uuid,
                 running:
-                  environmentsStatus[environment.uuid].running &&
-                  !environmentsStatus[environment.uuid].needRestart,
-                'need-restart': environmentsStatus[environment.uuid].needRestart
+                  environmentsStatus[environment.uuid]?.running &&
+                  !environmentsStatus[environment.uuid]?.needRestart,
+                'need-restart':
+                  environmentsStatus[environment.uuid]?.needRestart
               }"
+              appScrollWhenActive
               (click)="selectEnvironment(environment.uuid)"
               (contextmenu)="openContextMenu(environment.uuid, $event)"
             >
-              <div [formGroup]="activeEnvironmentForm">
+              <div
+                *ngIf="settings$ | async as settings"
+                [formGroup]="activeEnvironmentForm"
+                class="mw0"
+              >
                 <div class="d-flex">
-                  <div class="mw0 pr-2">
-                    <div
-                      *ngIf="
-                        !editingName ||
-                        activeEnvironment?.uuid !== environment.uuid
-                      "
-                      class="ellipsis environment-name"
-                      [ngClass]="{
-                        'environment-name-edit':
-                          activeEnvironment?.uuid === environment.uuid
-                      }"
-                      (click)="
-                        activeEnvironment?.uuid === environment.uuid &&
-                          handleNameClick($event)
-                      "
-                    >
-                      {{ environment.name ? environment.name : '&nbsp;' }}
-                    </div>
-                    <input
-                      *ngIf="
-                        editingName &&
-                        activeEnvironment?.uuid === environment.uuid
-                      "
-                      class="form-control invisible-input"
-                      formControlName="name"
-                      [appFocusOnEvent]="focusableInputs.ENVIRONMENT_NAME"
-                      type="text"
-                      (click)="$event.stopPropagation()"
-                      (keydown)="submitEnvironmentName($event)"
-                      (blur)="disableNameEdit()"
-                    />
-                  </div>
-                  <div class="ml-auto">
-                    <app-svg
-                      class="text-primary"
-                      [ngClass]="{
-                        visible: environment.proxyMode,
-                        invisible: !environment.proxyMode
-                      }"
-                      icon="security"
-                      size="12"
-                      ngbTooltip="Proxy mode enabled"
-                    ></app-svg>
-                  </div>
+                  <app-editable-element
+                    [text]="environment.name"
+                    formControlName="name"
+                    [ngClass]="{
+                      'text-truncate': settings.truncateRouteName,
+                      'text-break': !settings.truncateRouteName
+                    }"
+                    [editCondition]="
+                      activeEnvironment?.uuid === environment.uuid
+                    "
+                    (editChange)="enableDrag(!$event)"
+                  ></app-editable-element>
                 </div>
 
                 <div
-                  *ngIf="settings$ | async as settings"
-                  class="menu-subtitle ellipsis pt-2"
+                  class="nav-link-subtitle pt-2"
                   [ngClass]="{
-                    ellipsis: settings.truncateRouteName,
+                    'text-truncate': settings.truncateRouteName,
                     'text-break': !settings.truncateRouteName
                   }"
                 >
                   <app-svg
                     *ngIf="environment.tlsOptions.enabled"
-                    class="text-warning pr-1"
+                    class="text-warning pe-1"
                     icon="https"
                     size="12"
                     ngbTooltip="TLS enabled"
                   ></app-svg>
                   <span
-                    >{{ environment.hostname }}:{{ environment.port }}/{{
-                      environment.endpointPrefix
-                    }}</span
+                    >{{ environment.hostname || 'localhost' }}:{{
+                      environment.port
+                    }}/{{ environment.endpointPrefix }}</span
                   >
+                </div>
+              </div>
+              <div class="ms-auto ps-2">
+                <!-- Using .visible and .invisible to avoid content jumping -->
+                <div>
+                  <app-svg
+                    class="text-primary"
+                    [ngClass]="{
+                      visible: environment.proxyMode,
+                      invisible: !environment.proxyMode
+                    }"
+                    icon="security"
+                    size="12"
+                    ngbTooltip="Proxy mode enabled"
+                  ></app-svg>
+                </div>
+                <div
+                  *ngIf="(logsRecording$ | async)[environment.uuid] === true"
+                >
+                  <app-svg
+                    class="text-danger animation-flash"
+                    [ngClass]="{
+                      visible:
+                        (logsRecording$ | async)[environment.uuid] === true,
+                      invisible: !(logsRecording$ | async)[environment.uuid]
+                    }"
+                    icon="record"
+                    size="12"
+                    ngbTooltip="Recording in progress"
+                  ></app-svg>
                 </div>
               </div>
             </a>

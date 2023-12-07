@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   forwardRef,
+  HostBinding,
   HostListener,
   Input,
   OnInit,
@@ -12,8 +13,8 @@ import {
 } from '@angular/core';
 import {
   ControlValueAccessor,
-  FormControl,
-  NG_VALUE_ACCESSOR
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl
 } from '@angular/forms';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
@@ -55,8 +56,6 @@ export class CustomSelectComponent implements OnInit, ControlValueAccessor {
   @Input()
   public validation: Validation = null;
   @Input()
-  public fixedWidth: string;
-  @Input()
   public dropdownId: string;
   @Input()
   public placeholder = '';
@@ -64,8 +63,13 @@ export class CustomSelectComponent implements OnInit, ControlValueAccessor {
   public unknownValueMessage = '';
   @Input()
   public clearable = false;
+  // List of disabled entries values if any
+  @Input()
+  public disabledList: (number | string)[] = null;
   @Input()
   public defaultClearValue?: any;
+  @Input()
+  public placeholderClasses?: string;
 
   @ViewChild('dropdown')
   public dropdown: NgbDropdown;
@@ -77,13 +81,20 @@ export class CustomSelectComponent implements OnInit, ControlValueAccessor {
   public items$ = new BehaviorSubject<DropdownItems>(null);
   public selectedItem$ = new BehaviorSubject<DropdownItem>(null);
   public filteredItems$: Observable<DropdownItems>;
-  public customValue = new FormControl('');
+  public customValue = new UntypedFormControl('');
   public focusedItemIndex$ = new BehaviorSubject<number>(-1);
 
   public onChange: (_: any) => void;
   public onTouched: (_: any) => void;
 
+  public window = window;
+
   constructor() {}
+
+  @HostBinding('class')
+  public get hostClasses() {
+    return 'overflow-hidden';
+  }
 
   @Input()
   public set items(items: DropdownItems) {
@@ -179,8 +190,10 @@ export class CustomSelectComponent implements OnInit, ControlValueAccessor {
         if (this.enableCustomInput) {
           this.customValueInput.nativeElement.focus();
         } else {
-          this.dropdownMenuItems.first.nativeElement.focus();
-          this.focusedItemIndex$.next(0);
+          if (this.dropdownMenuItems.length > 0) {
+            this.dropdownMenuItems.first.nativeElement.focus();
+            this.focusedItemIndex$.next(0);
+          }
         }
       }, 0);
     } else {
@@ -236,8 +249,8 @@ export class CustomSelectComponent implements OnInit, ControlValueAccessor {
       if (
         !this.isNumber ||
         (this.isNumber &&
-          customValue >= this.validation.min &&
-          customValue <= this.validation.max)
+          (customValue as number) >= this.validation.min &&
+          (customValue as number) <= this.validation.max)
       ) {
         this.setValue(this.findItem(customValue));
       }

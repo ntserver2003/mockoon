@@ -1,6 +1,6 @@
-import { faker } from '@faker-js/faker';
 import { HelperOptions } from 'handlebars';
-import { IsEmpty } from '../utils';
+import { localFaker as faker, safeFakerReturn } from '../../libs/faker';
+import { IsEmpty, fromSafeString } from '../utils';
 
 export const FakerWrapper = {
   faker: function (...args: any[]) {
@@ -11,7 +11,15 @@ export const FakerWrapper = {
     if (args.length === 1) {
       fakerName = '';
     } else {
-      fakerName = args[0];
+      fakerName = fromSafeString(args[0]);
+    }
+
+    if (typeof fakerName !== 'string') {
+      throw new Error(
+        `Faker method name must be a string (valid: "address.zipCode", "date.past", etc) line ${
+          hbsOptions.loc && hbsOptions.loc.start && hbsOptions.loc.start.line
+        }`
+      );
     }
 
     const [fakerPrimaryMethod, fakerSecondaryMethod] = fakerName.split('.');
@@ -19,7 +27,7 @@ export const FakerWrapper = {
     // check faker helper name pattern
     if (
       !fakerName ||
-      !fakerName.match(/^[a-z]+\.[a-z]+$/i) ||
+      !fakerName.match(/^[a-z]+\.[a-z0-9]+$/i) ||
       !fakerPrimaryMethod ||
       !fakerSecondaryMethod ||
       !faker[fakerPrimaryMethod] ||
@@ -47,16 +55,6 @@ export const FakerWrapper = {
       fakerArgs.push(hbsOptions.hash);
     }
 
-    let fakedContent = fakerFunction(...fakerArgs);
-
-    // do not stringify Date coming from Faker.js
-    if (
-      (Array.isArray(fakedContent) || typeof fakedContent === 'object') &&
-      !(fakedContent instanceof Date)
-    ) {
-      fakedContent = JSON.stringify(fakedContent);
-    }
-
-    return fakedContent;
+    return safeFakerReturn(() => fakerFunction(...fakerArgs));
   }
 };

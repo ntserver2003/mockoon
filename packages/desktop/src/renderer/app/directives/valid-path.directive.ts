@@ -24,13 +24,15 @@ export class ValidPathDirective {
   public onChange: (_: any) => void;
   public onTouched: (_: any) => void;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef) {}
+  constructor(
+    private renderer: Renderer2,
+    private elementRef: ElementRef
+  ) {}
 
   /**
    * Handle values entered in the input field
    */
   @HostListener('input', ['$event.target.value'])
-  @HostListener('change', ['$event.target.value'])
   public handleInput(inputValue: string) {
     const cursorPosition = this.elementRef.nativeElement.selectionStart;
     const sanitizedValue = this.sanitize(inputValue);

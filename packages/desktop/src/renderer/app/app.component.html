@@ -2,13 +2,6 @@
   (itemClicked)="contextMenuItemClicked($event)"
 ></app-context-menu>
 
-<app-welcome-modal></app-welcome-modal>
-<app-settings-modal #settingsModal></app-settings-modal>
-<app-changelog-modal #changelogModal></app-changelog-modal>
-<app-editor-modal></app-editor-modal>
-<app-confirm-modal></app-confirm-modal>
-<app-duplicate-modal></app-duplicate-modal>
-
 <div class="toasts-container">
   <ngb-toast
     *ngFor="let toast of toasts$ | async"
@@ -29,17 +22,17 @@
     <app-environments-menu class="h-100"></app-environments-menu>
 
     <!-- Right "column" = header + routes menu + main-content -->
-    <div
-      *ngIf="
-        activeEnvironment$ | async as activeEnvironment;
-        else noActiveEnvironment
-      "
-      class="d-flex flex-column flex-fill h-100"
-    >
+    <div class="d-flex flex-column flex-fill h-100">
       <!-- Header: env name +start / env port + prefix -->
       <app-header></app-header>
 
-      <div class="main-content flex-fill mh0 h-100">
+      <div
+        *ngIf="
+          activeEnvironment$ | async as activeEnvironment;
+          else noActiveEnvironment
+        "
+        class="main-content flex-fill mh0 h-100"
+      >
         <ng-container [ngSwitch]="activeView$ | async">
           <app-environment-routes
             *ngSwitchCase="'ENV_ROUTES'"
@@ -51,6 +44,12 @@
             class="h-100"
           ></app-environment-databuckets>
 
+          <app-environment-callbacks
+            *ngSwitchCase="'ENV_CALLBACKS'"
+            class="h-100"
+          >
+          </app-environment-callbacks>
+
           <app-environment-headers
             *ngSwitchCase="'ENV_HEADERS'"
             class="h-100"
@@ -58,7 +57,7 @@
 
           <app-environment-logs
             *ngSwitchCase="'ENV_LOGS'"
-            class="h-100"
+            class="h-100 d-flex flex-column"
           ></app-environment-logs>
 
           <app-environment-proxy
@@ -70,14 +69,6 @@
             *ngSwitchCase="'ENV_SETTINGS'"
             class="h-100"
           ></app-environment-settings>
-
-          <div
-            *ngSwitchCase="'ENV_RELOAD'"
-            class="h-100 d-flex flex-column justify-content-center"
-          >
-            <app-loader></app-loader>
-            <p class="message mt-2">Reloading</p>
-          </div>
         </ng-container>
       </div>
     </div>
@@ -87,7 +78,7 @@
 </div>
 
 <ng-template #noActiveEnvironment>
-  <div class="flex-fill">
+  <div class="flex-fill main-content">
     <p class="message mt-4">No environment opened</p>
   </div>
 </ng-template>

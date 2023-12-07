@@ -28,19 +28,13 @@ input[type='number']::-webkit-outer-spin-button {
 }
 
 ::selection {
-  background: $blue;
-}
-
-html {
-  // reduce page size reduce everything in bootstrap
-  font-size: 14px;
+  background: rgba($blue, 0.5);
 }
 
 body {
   user-select: none;
   cursor: default;
   overflow: hidden;
-  letter-spacing: 0.02rem;
 }
 
 html,
@@ -54,46 +48,30 @@ input,
 .dropdown-item {
   transition: all ease-in-out 100ms;
 }
+
 .dropdown-menu {
   max-height: 300px;
   overflow-y: auto;
+  box-shadow: $box-shadow;
 
   &::-webkit-scrollbar-track,
   *::-webkit-scrollbar-track {
     background-color: $custom-gray;
   }
+
   &::-webkit-scrollbar-thumb,
   *::-webkit-scrollbar-thumb {
     background: lighten($gray-900, 15%);
   }
 }
 
-.h-35 {
-  max-height: 35%;
-}
-
 .main-content {
   background-color: darken($gray-900, 2%);
-}
-
-.ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.column-width {
-  min-width: 25%;
-  max-width: 25%;
 }
 
 .menu-list {
   overflow-x: hidden;
   overflow-y: auto;
-
-  .nav-item {
-    box-shadow: inset 0 -1px 0 0 lighten($gray-900, 3%);
-  }
 }
 
 // avoid list style when dragging (item is created outside of a .nav)
@@ -101,11 +79,7 @@ input,
   list-style: none;
 }
 
-.menu-header {
-  box-shadow: inset 0 -1px 0 0 lighten($gray-900, 3%);
-}
-
-.menu-subtitle {
+.nav-link-subtitle {
   color: $gray-500;
   font-size: $small-font-size;
 }
@@ -115,68 +89,59 @@ input,
   overflow-y: scroll;
 }
 
-.cp {
-  cursor: pointer;
+.cursor-pointer {
+  cursor: pointer !important;
 }
 
 .cursor-grab {
-  cursor: grab;
+  cursor: grab !important;
 }
 
-.invisible-input {
-  color: inherit;
-  background-color: transparent;
-  border: none;
-  outline: 0;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
-  height: inherit;
-  width: 100%;
+.cursor-text {
+  cursor: text !important;
 }
 
-// http methods badges
-$http-methods: ('get', lighten($blue, 5%)), ('put', lighten($orange, 5%)),
-  ('post', lighten($green, 5%)), ('delete', lighten($red, 8%)),
-  ('head', lighten($purple, 12%)), ('patch', $teal),
-  ('options', lighten($dark-blue, 15%));
-$http-methods-light: ('get', lighten($blue, 10%)),
-  ('put', lighten($orange, 10%)), ('post', lighten($green, 10%)),
-  ('delete', lighten($red, 17%)), ('head', lighten($purple, 25%)),
-  ('patch', $teal), ('options', lighten($dark-blue, 30%));
-@each $method in $http-methods-light {
-  .http-method-#{nth($method, 1)} {
+// route badges (methods)
+$route-badges: ('crud', lighten($cyan, 15%)), ('all', lighten($teal, 15%)),
+  ('get', lighten($blue, 10%)), ('put', lighten($orange, 10%)),
+  ('post', lighten($green, 10%)), ('delete', lighten($red, 17%)),
+  ('head', lighten($purple, 25%)), ('patch', $yellow),
+  ('options', lighten($dark-blue, 30%)),
+  ('propfind', lighten($custom-gray, 45%)),
+  ('proppatch', lighten($custom-gray, 45%)),
+  ('copy', lighten($custom-gray, 45%)), ('move', lighten($custom-gray, 45%)),
+  ('lock', lighten($custom-gray, 45%)), ('unlock', lighten($custom-gray, 45%)),
+  ('mkcol', lighten($custom-gray, 45%));
+@each $method in $route-badges {
+  .route-badge-#{nth($method, 1)} {
     background-color: #{nth($method, 2)};
-    color: $gray-900;
+    color: darken($gray-900, 10%);
   }
-}
-@each $method in $http-methods-light {
-  .http-method-#{nth($method, 1)}-text {
+  .route-badge-#{nth($method, 1)}-text {
     color: #{nth($method, 2)};
   }
 }
 
-.flex-fill {
-  flex: 1;
-}
-.flex-none {
-  flex: none !important;
-}
-.z-index-1 {
-  z-index: 1;
-}
-
-.form-right {
-  position: absolute;
-  right: 0;
+// response badges (status codes)
+$response-badges: ('4xx', lighten($orange, 10%)), ('2xx', lighten($green, 10%)),
+  ('5xx', lighten($red, 17%)), ('3xx', lighten($purple, 25%)),
+  ('1xx', lighten($custom-gray, 45%));
+@each $status in $response-badges {
+  .response-badge-#{nth($status, 1)} {
+    background-color: #{nth($status, 2)};
+    color: darken($gray-900, 10%);
+  }
+  .response-badge-#{nth($status, 1)}-text {
+    color: #{nth($status, 2)};
+  }
 }
 
 .toasts-container {
   z-index: 5000;
   position: absolute;
   width: 250px;
-  top: ($spacer / 2) + 2rem;
-  right: $spacer / 2;
+  top: calc($spacer / 2) + 2rem;
+  right: calc($spacer / 2);
 
   .toast {
     word-break: break-word;
@@ -207,7 +172,7 @@ $http-methods-light: ('get', lighten($blue, 10%)),
 .message {
   text-align: center;
   font-size: $font-size-lg;
-  color: $gray-600;
+  color: $gray-500;
   font-weight: $font-weight-light;
 
   &-md {
@@ -219,6 +184,14 @@ $http-methods-light: ('get', lighten($blue, 10%)),
   }
 }
 
+.success-message {
+  font-size: 0.8rem;
+  color: $success;
+}
+.error-message {
+  font-size: 0.8rem;
+  color: $danger;
+}
 .warning-message {
   font-size: 0.8rem;
   color: $warning;
@@ -233,19 +206,10 @@ $http-methods-light: ('get', lighten($blue, 10%)),
   cursor: col-resize;
 
   &:hover {
-    animation-name: resizerFadeIn;
+    animation-name: fadeIn;
     animation-duration: 0.75s;
     animation-delay: 0.25s;
     animation-fill-mode: forwards;
-  }
-}
-
-@keyframes resizerFadeIn {
-  from {
-    box-shadow: inset -4px 0 0 0 rgba($blue, 0);
-  }
-  to {
-    box-shadow: inset -4px 0 0 0 rgba($blue, 0.5);
   }
 }
 
@@ -254,8 +218,124 @@ $http-methods-light: ('get', lighten($blue, 10%)),
     linear-gradient($gray-500, $gray-500);
   background-repeat: no-repeat;
   background-size: 8px 3px;
-  background-position: top left, bottom left;
+  background-position:
+    top left,
+    bottom left;
   border-left: 3px solid $gray-500;
-  margin: $spacer / 2;
+  margin: calc($spacer / 2);
   width: 11px;
+}
+
+.drag-item.drag-highlight {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    border: 2px solid rgba($blue, 0.8);
+  }
+}
+
+.drag-item.drag-highlight-top {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    z-index: 1000;
+    content: '';
+    height: 2px;
+    left: 0;
+    right: 0;
+    border-top: 2px solid rgba($blue, 0.8);
+  }
+}
+
+.drag-item.drag-highlight-top:not(:first-of-type) {
+  &::before {
+    top: -1px;
+  }
+}
+
+.drag-item.drag-highlight-top:first-of-type {
+  &::before {
+    top: 0;
+  }
+}
+
+.drag-item.drag-highlight-bottom {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    z-index: 1000;
+    content: '';
+    height: 2px;
+    left: 0;
+    right: 0;
+    border-top: 2px solid rgba($blue, 0.8);
+  }
+}
+
+.drag-item.drag-highlight-bottom:not(:last-of-type) {
+  &::after {
+    bottom: -1px;
+  }
+}
+
+.drag-item.drag-highlight-bottom:last-of-type {
+  &::after {
+    bottom: 0px;
+  }
+}
+
+.with-indicator {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background-color: $green;
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+}
+
+.no-interact {
+  pointer-events: none;
+  user-select: none;
+}
+
+.text-shadow {
+  text-shadow: $box-shadow !important;
+}
+
+.modal-backdrop-transparent {
+  background-color: transparent;
+}
+
+.modal-dialog-max-height {
+  .modal-content {
+    max-height: 40vh;
+  }
+}
+
+.modal-dialog-transparent-backdrop {
+  .modal-content {
+    box-shadow: 0px 0px 8px 2px #111111;
+  }
+}
+
+.modal-dialog-rounded {
+  .modal-content {
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
 }

@@ -1,59 +1,35 @@
 import { app, BrowserWindow } from 'electron';
 import {
-  catchErrors as logCatchErrors,
-  error as logError,
-  info as logInfo,
-  transports as logTransports
-} from 'electron-log';
-import { join as pathJoin, resolve as pathResolve } from 'path';
-import {
   parseProtocolArgs,
   registerProtocol
 } from 'src/main/libs/custom-protocol';
 import { clearIPCChannels, initIPCListeners } from 'src/main/libs/ipc';
+import { createMainLogger, logInfo } from 'src/main/libs/logs';
 import { initMainWindow, saveOpenUrlArgs } from 'src/main/libs/main-window';
+import { setPaths } from 'src/main/libs/paths';
 import { ServerInstance } from 'src/main/libs/server-management';
-import { checkForUpdate } from 'src/main/libs/update';
 
-declare const isTesting: boolean;
-declare const isDev: boolean;
+declare const IS_TESTING: boolean;
+declare const IS_DEV: boolean;
 
-const setAppAndLogPath = (path: string) => {
-  app.setPath('userData', path);
-
-  logTransports.file.resolvePath = () => pathJoin(path, '/logs', 'main.log');
-};
-
-// set local data folder when in dev mode or running tests
-if (isTesting || isDev) {
-  setAppAndLogPath(pathResolve('./tmp'));
-}
-
-// set local data folder when is portable mode
-const portableExecDir = process.env.PORTABLE_EXECUTABLE_DIR;
-if (portableExecDir) {
-  setAppAndLogPath(pathJoin(portableExecDir, 'mockoon-data'));
-}
-
-// log uncaught errors
-logCatchErrors({
-  onError: (error: Error) => {
-    logError(error);
-
-    return false;
-  }
-});
+setPaths();
+createMainLogger();
 
 let mainWindow: BrowserWindow;
 
 // try getting a lock to ensure only one instance of the application is launched
-const appLock = app.requestSingleInstanceLock();
+let appLock = app.requestSingleInstanceLock();
+
+if (IS_DEV) {
+  // when serving (dev mode) disable the lock to enable launching multiple instances
+  appLock = true;
+}
 
 const initApp = () => {
   mainWindow = initMainWindow();
   initIPCListeners(mainWindow);
 
-  if (isDev) {
+  if (IS_DEV) {
     // when serving (dev mode) enable hot reloading
     import('src/main/libs/hot-reload').then((hotReloadModule) => {
       hotReloadModule.hotReload();
@@ -63,7 +39,7 @@ const initApp = () => {
 
 if (!appLock) {
   logInfo(
-    '[MAIN]An instance of the application is already running. Stopping process.'
+    '[MAIN] An instance of the application is already running. Stopping process.'
   );
   app.quit();
 } else {
@@ -88,8 +64,6 @@ if (!appLock) {
     registerProtocol();
     initApp();
 
-    checkForUpdate(mainWindow);
-
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
@@ -107,7 +81,7 @@ if (!appLock) {
 
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q (except when running tests)
-    if (process.platform !== 'darwin' || isTesting) {
+    if (process.platform !== 'darwin' || IS_TESTING) {
       app.quit();
     }
   });

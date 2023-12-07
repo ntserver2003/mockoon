@@ -31,34 +31,32 @@ describe('UI interactions', () => {
     it('should not show the name edit input before and after selecting the environment', async () => {
       await environments.select(1);
 
-      await $(`${secondEnvSelector} .environment-name`).waitForExist();
-      await $(
-        `${secondEnvSelector} input[formcontrolname="name"]`
-      ).waitForExist({ reverse: true });
+      await $(`${secondEnvSelector} app-editable-element span`).waitForExist();
+      await $(`${secondEnvSelector} app-editable-element input`).waitForExist({
+        reverse: true
+      });
 
       await environments.select(2);
       await navigation.switchView('ENV_SETTINGS');
 
-      await $(`${secondEnvSelector} .environment-name`).waitForExist();
-      await $(
-        `${secondEnvSelector} input[formcontrolname="name"]`
-      ).waitForExist({ reverse: true });
+      await $(`${secondEnvSelector} app-editable-element span`).waitForExist();
+      await $(`${secondEnvSelector} app-editable-element input`).waitForExist({
+        reverse: true
+      });
     });
 
     it('should show the name edit input after clicking on the environment name', async () => {
-      await $(`${secondEnvSelector} .environment-name`).click();
-      await $(`${secondEnvSelector} .environment-name`).waitForExist({
+      await $(`${secondEnvSelector} app-editable-element`).click();
+      await $(`${secondEnvSelector} app-editable-element span`).waitForExist({
         reverse: true
       });
-      await $(
-        `${secondEnvSelector} input[formcontrolname="name"]`
-      ).waitForExist();
+      await $(`${secondEnvSelector} app-editable-element input`).waitForExist();
     });
 
     it('should be able to edit the environment name in the environments menu', async () => {
       await environmentsSettings.assertSettingValue('name', 'UI env name edit');
 
-      await $(`${secondEnvSelector} input[formcontrolname="name"]`).addValue(
+      await $(`${secondEnvSelector} app-editable-element input`).addValue(
         'newname'
       );
 
@@ -80,7 +78,7 @@ describe('UI interactions', () => {
 
       expect(await routes.documentationInput.isFocused()).toEqual(true);
 
-      await routes.add();
+      await routes.addHTTPRoute();
 
       expect(await routes.pathInput.isFocused()).toEqual(true);
     });
@@ -95,8 +93,8 @@ describe('UI interactions', () => {
     });
 
     it('should prevent entering letters and other characters', async () => {
-      await environmentsSettings.setSettingValue('port', 'a.e-+');
-      await environmentsSettings.assertSettingValue('port', '0');
+      await environmentsSettings.setSettingValue('port', '1a.e-+');
+      await environmentsSettings.assertSettingValue('port', '1');
     });
 
     it('should enforce max constraint', async () => {
@@ -255,7 +253,7 @@ describe('UI interactions', () => {
     it('should be able to select a method by clicking', async () => {
       await routes.select(1);
       await utils.openDropdown(dropdownId);
-      await utils.selectDropdownItem(dropdownId, 3);
+      await utils.selectDropdownItem(dropdownId, 4);
 
       await utils.waitForAutosave();
       await file.verifyObjectPropertyInFile(
@@ -273,7 +271,7 @@ describe('UI interactions', () => {
       await file.verifyObjectPropertyInFile(
         './tmp/storage/ui-1.json',
         'routes.0.method',
-        'options'
+        'unlock'
       );
     });
   });

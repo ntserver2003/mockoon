@@ -1,33 +1,42 @@
 import { Injectable, NgZone } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
-import { ChangelogModalComponent } from 'src/renderer/app/components/modals/changelog-modal/changelog-modal.component';
-import { SettingsModalComponent } from 'src/renderer/app/components/modals/settings-modal/settings-modal.component';
+import { EMPTY } from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  map,
+  tap
+} from 'rxjs/operators';
+import { Logger } from 'src/renderer/app/classes/logger';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
 import { EventsService } from 'src/renderer/app/services/events.service';
 import { ImportExportService } from 'src/renderer/app/services/import-export.service';
+import { ToastsService } from 'src/renderer/app/services/toasts.service';
+import { UIService } from 'src/renderer/app/services/ui.service';
+import { UserService } from 'src/renderer/app/services/user.service';
 import { Store } from 'src/renderer/app/stores/store';
 import { FileWatcherOptions } from 'src/shared/models/settings.model';
 
 @Injectable({ providedIn: 'root' })
-export class ApiService {
+export class ApiService extends Logger {
   constructor(
     private environmentsService: EnvironmentsService,
     private eventsService: EventsService,
-    private modalService: NgbModal,
     private importExportService: ImportExportService,
     private store: Store,
-    private zone: NgZone
-  ) {}
-
-  public init(
-    changelogModal: ChangelogModalComponent,
-    settingsModal: SettingsModalComponent
+    private zone: NgZone,
+    private userService: UserService,
+    protected toastsService: ToastsService,
+    private uiService: UIService
   ) {
-    MainAPI.receive('APP_UPDATE_AVAILABLE', () => {
+    super('[RENDERER][SERVICE][API] ', toastsService);
+  }
+
+  public init() {
+    MainAPI.receive('APP_UPDATE_AVAILABLE', (version) => {
       this.zone.run(() => {
-        this.eventsService.updateAvailable$.next(true);
+        this.eventsService.updateAvailable$.next(version);
       });
     });
 
@@ -51,7 +60,7 @@ export class ApiService {
             this.environmentsService.closeEnvironment().subscribe();
             break;
           case 'NEW_ROUTE':
-            this.environmentsService.addRoute();
+            this.environmentsService.addHTTPRoute('root');
             break;
           case 'NEW_ROUTE_CLIPBOARD':
             this.environmentsService.addRouteFromClipboard().subscribe();
@@ -63,7 +72,7 @@ export class ApiService {
             this.environmentsService.toggleAllEnvironments();
             break;
           case 'DUPLICATE_ROUTE':
-            this.environmentsService.duplicateRoute();
+            this.environmentsService.duplicateRoute('root');
             break;
           case 'DELETE_ROUTE':
             this.environmentsService.removeRoute();
@@ -74,19 +83,11 @@ export class ApiService {
           case 'NEXT_ENVIRONMENT':
             this.environmentsService.setActiveEnvironment('next');
             break;
-          case 'PREVIOUS_ROUTE':
-            this.environmentsService.setActiveRoute('previous');
-            break;
-          case 'NEXT_ROUTE':
-            this.environmentsService.setActiveRoute('next');
-            break;
           case 'OPEN_SETTINGS':
-            this.modalService.dismissAll();
-            settingsModal.showModal();
+            this.uiService.openModal('settings');
             break;
           case 'OPEN_CHANGELOG':
-            this.modalService.dismissAll();
-            changelogModal.showModal();
+            this.uiService.openModal('changelog');
             break;
           case 'IMPORT_OPENAPI_FILE':
             this.importExportService.importOpenAPIFile().subscribe();
@@ -102,8 +103,23 @@ export class ApiService {
     MainAPI.receive('APP_CUSTOM_PROTOCOL', (action, parameters) => {
       this.zone.run(() => {
         switch (action) {
+          case 'auth':
+            this.userService
+              .authWithToken(parameters.token)
+              .pipe(
+                tap(() => {
+                  this.uiService.closeModal('auth');
+                  this.logMessage('info', 'LOGIN_SUCCESS');
+                }),
+                catchError(() => {
+                  this.logMessage('error', 'LOGIN_ERROR');
+
+                  return EMPTY;
+                })
+              )
+              .subscribe();
+            break;
           case 'load-environment':
-          case 'load-export-data':
             this.environmentsService
               .newEnvironmentFromURL(parameters.url)
               .subscribe();
