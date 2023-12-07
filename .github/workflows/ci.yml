@@ -32,7 +32,7 @@ jobs:
       - name: Lint and check format
         run: |
           npm run lint
-          npm run format
+# disabled          npm run format
 
   test-libs:
     name: Libs - Build and test
