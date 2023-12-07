@@ -27,7 +27,7 @@ It's a desktop application and a [CLI](https://mockoon.com/cli/) that help you w
 Additional features:
 
 - [Handlebars Partials](https://handlebarsjs.com/guide/partials.html#partials) support 
-- `substring`, `replace` helpers
+- `replace` helper
 
 ## Features
 
