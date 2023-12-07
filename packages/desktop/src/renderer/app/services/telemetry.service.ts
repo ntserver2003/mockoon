@@ -1,15 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Functions, httpsCallableData } from '@angular/fire/functions';
+import { generateUUID } from '@mockoon/commons';
 import { differenceInMilliseconds, endOfDay } from 'date-fns';
 import {
   BehaviorSubject,
+  Observable,
+  Subject,
   combineLatest,
   from,
-  Observable,
   of,
   race,
-  Subject,
   timer
 } from 'rxjs';
 import {
@@ -28,8 +28,7 @@ import { TelemetrySession } from 'src/renderer/app/models/telemetry.model';
 import { LocalStorageService } from 'src/renderer/app/services/local-storage.service';
 import { RemoteConfigService } from 'src/renderer/app/services/remote-config.service';
 import { Store } from 'src/renderer/app/stores/store';
-import { Config } from 'src/shared/config';
-import { v4 as uuid } from 'uuid';
+import { Config } from 'src/renderer/config';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +38,7 @@ export class TelemetryService {
     installationId: null,
     firstSession: false,
     country: null,
-    startTime: null,
+    startTime: new Date().toISOString(),
     endTime: null,
     os: null,
     version: Config.appVersion,
@@ -54,7 +53,7 @@ export class TelemetryService {
     private http: HttpClient,
     private localStorageService: LocalStorageService,
     private store: Store,
-    private firebaseFunctions: Functions
+    private httpClient: HttpClient
   ) {}
 
   /**
@@ -109,22 +108,21 @@ export class TelemetryService {
           );
         }
       ),
-      switchMap((v) => {
+      switchMap(() => {
         const environments = this.store.get('environments');
 
-        return httpsCallableData(
-          this.firebaseFunctions,
-          Config.telemetry.functionName
-        )({
-          ...this.session,
-          environmentsCount: environments.length
-        }).pipe(catchError(() => of(true)));
+        return this.httpClient
+          .post(`${Config.apiURL}events/telemetry`, {
+            ...this.session,
+            environmentsCount: environments.length
+          })
+          .pipe(catchError(() => of(true)));
       }),
       tap(() => {
         this.sessionInProgress$.next(false);
 
         // reset session start time after it has been sent
-        this.session.startTime = null;
+        this.session.startTime = new Date().toISOString();
         this.session.firstSession = false;
       })
     );
@@ -165,7 +163,7 @@ export class TelemetryService {
     geoipEndpoint: string
   ): Observable<[string, string]> {
     return combineLatest([
-      of(this.localStorageService.getItem('installationId') || uuid()),
+      of(this.localStorageService.getItem('installationId') || generateUUID()),
       of(this.localStorageService.getItem('country')).pipe(
         switchMap((country) =>
           country

@@ -1,29 +1,33 @@
 import { Injectable } from '@angular/core';
 import {
   BINARY_BODY,
+  Callback,
   DataBucket,
   Environment,
   EnvironmentSchema,
-  GenerateDatabucketID,
+  GenerateUniqueID,
+  generateUUID,
   HighestMigrationId,
+  repairRefs,
   Route,
   Transaction
 } from '@mockoon/commons';
 import { Logger } from 'src/renderer/app/classes/logger';
 import { EnvironmentLog } from 'src/renderer/app/models/environment-logs.model';
 import { MigrationService } from 'src/renderer/app/services/migration.service';
+import { SettingsService } from 'src/renderer/app/services/settings.service';
 import { ToastsService } from 'src/renderer/app/services/toasts.service';
 import { Store } from 'src/renderer/app/stores/store';
-import { v4 as uuid } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
 export class DataService extends Logger {
   constructor(
     protected toastsService: ToastsService,
     private store: Store,
-    private migrationService: MigrationService
+    private migrationService: MigrationService,
+    private settingsService: SettingsService
   ) {
-    super('[SERVICE][DATA]', toastsService);
+    super('[RENDERER][SERVICE][DATA] ', toastsService);
   }
 
   /**
@@ -42,19 +46,23 @@ export class DataService extends Logger {
         this.migrationService.migrateEnvironment(environment);
     } catch (error) {
       this.logMessage('error', 'ENVIRONMENT_MIGRATION_FAILED', {
-        name: environment.name,
-        uuid: environment.uuid
+        environmentName: environment.name,
+        environmentUUID: environment.uuid
       });
 
       migratedEnvironment = environment;
       migratedEnvironment.lastMigration = HighestMigrationId;
     }
-
-    const validatedEnvironment =
+    let validatedEnvironment =
       EnvironmentSchema.validate(migratedEnvironment).value;
 
-    // deduplicate UUIDs
-    return this.deduplicateUUIDs(validatedEnvironment);
+    validatedEnvironment = this.deduplicateUUIDs(validatedEnvironment);
+    validatedEnvironment = repairRefs(validatedEnvironment);
+
+    this.settingsService.cleanDisabledRoutes(validatedEnvironment);
+    this.settingsService.cleanCollapsedFolders(validatedEnvironment);
+
+    return validatedEnvironment;
   }
 
   /**
@@ -64,7 +72,7 @@ export class DataService extends Logger {
    */
   public formatLog(transaction: Transaction): EnvironmentLog {
     return {
-      UUID: uuid(),
+      UUID: generateUUID(),
       routeUUID: transaction.routeUUID,
       routeResponseUUID: transaction.routeResponseUUID,
       timestamp: new Date(),
@@ -81,6 +89,7 @@ export class DataService extends Logger {
       proxied: transaction.proxied,
       response: {
         status: transaction.response.statusCode,
+        statusMessage: transaction.response.statusMessage,
         headers: transaction.response.headers,
         body: transaction.response.body,
         binaryBody: transaction.response.body === BINARY_BODY
@@ -121,56 +130,12 @@ export class DataService extends Logger {
   }
 
   /**
-   * Renew one environment UUIDs
-   *
-   * @param params
-   */
-  public renewEnvironmentUUIDs(environment: Environment) {
-    environment.uuid = uuid();
-
-    environment.routes.forEach((route) => {
-      this.renewRouteUUIDs(route);
-    });
-    environment.data.forEach((databucket) => {
-      this.renewDatabucketUUIDs(databucket);
-    });
-
-    return environment;
-  }
-
-  /**
-   * Renew one route UUIDs
-   *
-   * @param params
-   */
-  public renewRouteUUIDs(route: Route) {
-    route.uuid = uuid();
-
-    route.responses.forEach((routeResponse) => {
-      routeResponse.uuid = uuid();
-    });
-
-    return route;
-  }
-
-  /**
-   * Renew one databucket UUIDs
-   *
-   * @param params
-   */
-  public renewDatabucketUUIDs(databucket: DataBucket) {
-    databucket.uuid = uuid();
-
-    return databucket;
-  }
-
-  /**
    * Renew one databucket ID
    *
-   * @param params
+   * @param databucket
    */
   public renewDatabucketID(databucket: DataBucket) {
-    databucket.id = GenerateDatabucketID();
+    databucket.id = GenerateUniqueID();
 
     return databucket;
   }
@@ -183,7 +148,7 @@ export class DataService extends Logger {
    */
   public deduplicateDatabucketID(databucket: DataBucket) {
     const activeEnvironment = this.store.getActiveEnvironment();
-    let foundID;
+    let foundID: DataBucket;
 
     do {
       databucket = this.renewDatabucketID(databucket);
@@ -193,6 +158,38 @@ export class DataService extends Logger {
     } while (foundID);
 
     return databucket;
+  }
+
+  /**
+   * Sets a new id to the given callback.
+   *
+   * @param callback callback reference
+   * @returns modified callback reference
+   */
+  public renewCallbackID(callback: Callback) {
+    callback.id = GenerateUniqueID();
+
+    return callback;
+  }
+
+  /**
+   * Assigns a unique id for the callback.
+   *
+   * @param callback callback reference
+   * @returns callback which has a unique id
+   */
+  public deduplicateCallbackID(callback: Callback) {
+    const activeEnvironment = this.store.getActiveEnvironment();
+    let foundID: Callback;
+
+    do {
+      callback = this.renewCallbackID(callback);
+      foundID = activeEnvironment.callbacks.find(
+        (cb) => callback.id === cb.id && callback.uuid !== cb.uuid
+      );
+    } while (foundID);
+
+    return callback;
   }
 
   /**
@@ -220,55 +217,91 @@ export class DataService extends Logger {
    * @param environments
    * @returns
    */
-  private deduplicateUUIDs(newEnvironment: Environment): Environment {
+  public deduplicateUUIDs(
+    newEnvironment: Environment,
+    force = false
+  ): Environment {
     const UUIDs = new Set();
     const environments = this.store.get('environments');
+    const renewedUUIDs: { [key: string]: string } = {};
 
-    environments.forEach((environment) => {
-      UUIDs.add(environment.uuid);
+    if (!force) {
+      environments.forEach((environment) => {
+        UUIDs.add(environment.uuid);
 
-      environment.data.forEach((data) => {
-        UUIDs.add(data.uuid);
-      });
+        environment.data.forEach((data) => {
+          UUIDs.add(data.uuid);
+        });
 
-      environment.routes.forEach((route) => {
-        UUIDs.add(route.uuid);
+        environment.routes.forEach((route) => {
+          UUIDs.add(route.uuid);
 
-        route.responses.forEach((response) => {
-          UUIDs.add(response.uuid);
+          route.responses.forEach((response) => {
+            UUIDs.add(response.uuid);
+          });
+        });
+
+        environment.folders.forEach((folder) => {
+          UUIDs.add(folder.uuid);
         });
       });
-    });
+    }
 
-    if (UUIDs.has(newEnvironment.uuid)) {
-      newEnvironment.uuid = uuid();
+    if (force || UUIDs.has(newEnvironment.uuid)) {
+      newEnvironment.uuid = generateUUID();
     }
     UUIDs.add(newEnvironment.uuid);
 
     newEnvironment.data.forEach((data) => {
-      if (UUIDs.has(data.uuid)) {
-        data.uuid = uuid();
+      if (force || UUIDs.has(data.uuid)) {
+        data.uuid = generateUUID();
       }
-
       UUIDs.add(data.uuid);
     });
 
     newEnvironment.routes.forEach((route) => {
-      if (UUIDs.has(route.uuid)) {
-        route.uuid = uuid();
+      if (force || UUIDs.has(route.uuid)) {
+        // keep old ref first
+        renewedUUIDs[route.uuid] = generateUUID();
+        route.uuid = renewedUUIDs[route.uuid];
       }
-
       UUIDs.add(route.uuid);
 
       route.responses.forEach((response) => {
-        if (UUIDs.has(response.uuid)) {
-          response.uuid = uuid();
+        if (force || UUIDs.has(response.uuid)) {
+          response.uuid = generateUUID();
         }
         UUIDs.add(response.uuid);
       });
     });
 
+    newEnvironment.folders.forEach((folder) => {
+      if (force || UUIDs.has(folder.uuid)) {
+        // keep old ref first
+        renewedUUIDs[folder.uuid] = generateUUID();
+        folder.uuid = renewedUUIDs[folder.uuid];
+      }
+      UUIDs.add(folder.uuid);
+    });
+
+    this.renewRefs(newEnvironment, renewedUUIDs);
+
     return newEnvironment;
+  }
+
+  /**
+   * Renew one route UUIDs
+   *
+   * @param params
+   */
+  public renewRouteUUIDs(route: Route) {
+    route.uuid = generateUUID();
+
+    route.responses.forEach((routeResponse) => {
+      routeResponse.uuid = generateUUID();
+    });
+
+    return route;
   }
 
   /**
@@ -301,5 +334,46 @@ export class DataService extends Logger {
     );
 
     return formattedParams;
+  }
+
+  /**
+   * Replace uuids in an array of objects taking new values from a dictionary
+   *
+   * @param items
+   * @param oldNewDict
+   */
+  private replaceObjectsUUID<T extends { uuid: string }>(
+    items: T[],
+    oldNewDict: { [key: string]: string }
+  ) {
+    return items.map((item) => {
+      if (oldNewDict[item.uuid]) {
+        item.uuid = oldNewDict[item.uuid];
+
+        return item;
+      } else {
+        return item;
+      }
+    });
+  }
+
+  /**
+   * Renew folders and routes references (in root folders/routes lists, and folders children lists)
+   *
+   * @param environment
+   * @param renewedUUIDs
+   */
+  private renewRefs(
+    environment: Environment,
+    renewedUUIDs: { [key: string]: string }
+  ) {
+    environment.rootChildren = this.replaceObjectsUUID(
+      environment.rootChildren,
+      renewedUUIDs
+    );
+
+    environment.folders.forEach((folder) => {
+      folder.children = this.replaceObjectsUUID(folder.children, renewedUUIDs);
+    });
   }
 }

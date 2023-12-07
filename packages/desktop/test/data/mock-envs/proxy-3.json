@@ -1,6 +1,6 @@
 {
   "uuid": "53bce436-ee1d-461f-baf8-a837612faf38",
-  "lastMigration": 24,
+  "lastMigration": 32,
   "name": "Proxy disabled",
   "endpointPrefix": "",
   "latency": 0,
@@ -11,7 +11,6 @@
       "method": "get",
       "endpoint": "disabled-proxy",
       "documentation": "",
-      "enabled": true,
       "responses": [
         {
           "uuid": "5ddcbb6a-e13d-4d4a-ac6f-2e776dc6e3e9",
@@ -28,10 +27,13 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     }
   ],
   "proxyMode": false,
@@ -43,7 +45,7 @@
   "proxyResHeaders": [
     { "key": "x-proxy-response-header", "value": "header value" }
   ],
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "tlsOptions": {
     "enabled": true,
     "type": "CERT",
@@ -53,5 +55,10 @@
     "caPath": "",
     "passphrase": ""
   },
-  "data": []
+  "data": [],
+  "folders": [],
+  "rootChildren": [
+    { "type": "route", "uuid": "f8f77188-32d4-4c0a-bd0a-38898b560f40" }
+  ],
+  "callbacks": []
 }

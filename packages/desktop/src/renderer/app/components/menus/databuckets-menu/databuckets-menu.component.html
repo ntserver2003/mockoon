@@ -1,7 +1,7 @@
 <ng-container *ngIf="activeEnvironment$ | async as activeEnvironment">
-  <div class="databuckets-menu d-flex flex-column h-100" appMousedragDeadzone>
-    <div class="menu-header d-flex">
-      <ul class="nav d-flex w-100 pt-2 pb-2 align-items-center">
+  <div class="databuckets-menu d-flex flex-column h-100">
+    <div class="d-flex">
+      <ul class="nav d-flex w-100 py-2 align-items-center">
         <li class="nav-item">
           <a
             class="nav-link text-primary"
@@ -24,7 +24,6 @@
                 (os === 'darwin' ? 'Cmd' : 'Ctrl') +
                 '+Shift+F)'
               "
-              triggers="hover"
               [appFocusOnEvent]="focusableInputs.DATABUCKET_FILTER"
             />
             <button
@@ -43,19 +42,22 @@
     </div>
 
     <ng-container *ngIf="databucketList$ | async as databucketList">
-      <ul
-        class="nav flex-column menu-list"
-        #databucketsMenu
-        cdkDropList
-        (cdkDropListDropped)="reorderDatabuckets($event)"
-      >
+      <ul class="nav flex-column menu-list h-100">
         <li
           class="nav-item"
-          *ngFor="let environmentDatabucket of databucketList"
-          cdkDrag
-          cdkDragLockAxis="y"
-          cdkDragBoundary=".databuckets-menu .nav.menu-list"
-          [cdkDragDisabled]="dragIsDisabled"
+          *ngFor="
+            let environmentDatabucket of databucketList;
+            trackBy: trackByUuid
+          "
+          [appSearchFilter]="databucketsFilter$"
+          appDraggable
+          appDropzone
+          dragContainer="databuckets"
+          [dragEnabled]="true"
+          dragParentId="root"
+          [dragIsContainer]="false"
+          [dragId]="environmentDatabucket.uuid"
+          (dropped)="reorganizeDatabuckets($event)"
         >
           <a
             class="nav-link"
@@ -63,6 +65,7 @@
               active:
                 (activeDatabucket$ | async)?.uuid === environmentDatabucket.uuid
             }"
+            appScrollWhenActive
             (click)="selectDatabucket(environmentDatabucket.uuid)"
             (contextmenu)="openContextMenu(environmentDatabucket.uuid, $event)"
           >
@@ -70,13 +73,16 @@
               *ngIf="settings$ | async as settings"
               class="databucket-path"
               [ngClass]="{
-                ellipsis: settings.truncateRouteName,
+                'text-truncate': settings.truncateRouteName,
                 'text-break': !settings.truncateRouteName
               }"
             >
               {{ environmentDatabucket.name }}
             </div>
-            <div class="menu-subtitle ellipsis">
+            <div
+              *ngIf="environmentDatabucket.documentation"
+              class="nav-link-subtitle text-truncate"
+            >
               {{ environmentDatabucket.documentation }}
             </div>
           </a>

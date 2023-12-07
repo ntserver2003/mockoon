@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import contextMenu from '../libs/context-menu';
+import contextMenu, { ContextMenuRouteActions } from '../libs/context-menu';
 import dialogs from '../libs/dialogs';
 import environments from '../libs/environments';
 import routes from '../libs/routes';
@@ -33,6 +33,24 @@ describe('Routes filter', () => {
     await routes.assertCount(1);
   });
 
+  it('should filter route by mulitple words (dolphin + post)', async () => {
+    await routes.clearFilter();
+    await browser.pause(100);
+    await routes.assertCount(3);
+    await routes.setFilter('dolphins post');
+    await browser.pause(100);
+    await routes.assertCount(1);
+  });
+
+  it('should filter route by method', async () => {
+    await routes.clearFilter();
+    await browser.pause(100);
+    await routes.assertCount(3);
+    await routes.setFilter('post');
+    await browser.pause(100);
+    await routes.assertCount(1);
+  });
+
   it('should reset routes filter when clicking on the button Clear filter', async () => {
     await routes.clearFilter();
     await browser.pause(100);
@@ -41,7 +59,7 @@ describe('Routes filter', () => {
 
   it('should reset routes filter when adding a new route', async () => {
     await routes.setFilter('/dolphins');
-    await routes.add();
+    await routes.addHTTPRoute();
     await routes.assertFilter('');
   });
 
@@ -57,7 +75,12 @@ describe('Routes filter', () => {
     await routes.setFilter('/dolphins');
     await browser.pause(100);
     await routes.assertCount(1);
-    await contextMenu.click('routes', 1, 2);
+    // menu item id is still 3, as filtering is using d-none class
+    await contextMenu.click(
+      'routes',
+      3,
+      ContextMenuRouteActions.DUPLICATE_TO_ENV
+    );
     await $(
       '.modal-content .modal-body .list-group .list-group-item:first-child'
     ).click();

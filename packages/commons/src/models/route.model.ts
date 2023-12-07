@@ -6,6 +6,11 @@ export enum BodyTypes {
   DATABUCKET = 'DATABUCKET'
 }
 
+export type CallbackInvocation = {
+  uuid: string;
+  latency: number;
+};
+
 export type RouteResponse = {
   uuid: string;
   rules: ResponseRule[];
@@ -21,16 +26,38 @@ export type RouteResponse = {
   sendFileAsBody: boolean;
   disableTemplating: boolean;
   fallbackTo404: boolean;
+  // default is always true for CRUD routes first response
   default: boolean;
+  crudKey: string;
+  callbacks: CallbackInvocation[];
 };
 
 export enum ResponseMode {
   RANDOM = 'RANDOM',
   SEQUENTIAL = 'SEQUENTIAL',
-  DISABLE_RULES = 'DISABLE_RULES'
+  DISABLE_RULES = 'DISABLE_RULES',
+  FALLBACK = 'FALLBACK'
 }
 
-export type ResponseRuleOperators = 'equals' | 'regex' | 'null' | 'empty_array';
+export const RulesDisablingResponseModes: ResponseMode[] = [
+  ResponseMode.RANDOM,
+  ResponseMode.SEQUENTIAL,
+  ResponseMode.DISABLE_RULES
+];
+
+export const RulesNotUsingDefaultResponse: ResponseMode[] = [
+  ResponseMode.RANDOM,
+  ResponseMode.SEQUENTIAL,
+  ResponseMode.DISABLE_RULES,
+  ResponseMode.FALLBACK
+];
+
+export type ResponseRuleOperators =
+  | 'equals'
+  | 'regex'
+  | 'regex_i'
+  | 'null'
+  | 'empty_array';
 
 export type ResponseRule = {
   target: ResponseRuleTargets;
@@ -48,24 +75,37 @@ export type ResponseRuleTargets =
   | 'request_number'
   | 'cookie';
 
+export enum RouteType {
+  HTTP = 'http',
+  CRUD = 'crud'
+}
+
 export type Route = {
   uuid: string;
+  type: RouteType;
   documentation: string;
-  method: keyof typeof Methods;
+  method: keyof typeof Methods | '';
   endpoint: string;
   responses: RouteResponse[];
-  enabled: boolean;
   responseMode: ResponseMode | null;
 };
 
 export type Header = { key: string; value: string };
 
 export enum Methods {
+  all = 'all',
   get = 'get',
   post = 'post',
   put = 'put',
   patch = 'patch',
   delete = 'delete',
   head = 'head',
-  options = 'options'
+  options = 'options',
+  propfind = 'propfind',
+  proppatch = 'proppatch',
+  move = 'move',
+  copy = 'copy',
+  mkcol = 'mkcol',
+  lock = 'lock',
+  unlock = 'unlock'
 }

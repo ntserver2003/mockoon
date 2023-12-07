@@ -1,21 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   OnDestroy,
-  OnInit,
-  ViewChild
+  OnInit
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { merge, Observable, Subject } from 'rxjs';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { Observable, Subject, merge } from 'rxjs';
 import { filter, map, takeUntil, tap } from 'rxjs/operators';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { FakerLocales } from 'src/renderer/app/constants/faker.constants';
 import { SettingsDefault } from 'src/renderer/app/constants/settings-schema.constants';
+import { DropdownItems } from 'src/renderer/app/models/common.model';
 import { SettingsService } from 'src/renderer/app/services/settings.service';
+import { UIService } from 'src/renderer/app/services/ui.service';
 import { Store } from 'src/renderer/app/stores/store';
-import { Config } from 'src/shared/config';
+import { Config } from 'src/renderer/config';
 import { FileWatcherOptions, Settings } from 'src/shared/models/settings.model';
 
 @Component({
@@ -25,24 +24,22 @@ import { FileWatcherOptions, Settings } from 'src/shared/models/settings.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SettingsModalComponent implements OnInit, OnDestroy {
-  @ViewChild('modal')
-  public modal: ElementRef;
   public settings$: Observable<Settings>;
   public Infinity = Infinity;
-  public fakerLocales = FakerLocales;
-  public fileWatcherOptions = [
-    { label: 'Disabled', value: FileWatcherOptions.DISABLED },
-    { label: 'Prompt', value: FileWatcherOptions.PROMPT },
-    { label: 'Auto', value: FileWatcherOptions.AUTO }
+  public fakerLocales: DropdownItems = FakerLocales;
+  public fileWatcherOptions: DropdownItems = [
+    { value: FileWatcherOptions.DISABLED, label: 'Disabled' },
+    { value: FileWatcherOptions.PROMPT, label: 'Prompt' },
+    { value: FileWatcherOptions.AUTO, label: 'Auto' }
   ];
-  public settingsForm: FormGroup;
+  public settingsForm: UntypedFormGroup;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private modalService: NgbModal,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private settingsService: SettingsService,
-    private store: Store
+    private store: Store,
+    private uiService: UIService
   ) {}
 
   ngOnInit() {
@@ -67,16 +64,14 @@ export class SettingsModalComponent implements OnInit, OnDestroy {
     this.settingsService.updateSettings({ [settingName]: settingNewValue });
   }
 
-  public showModal() {
-    this.modalService.open(this.modal, {
-      size: 'lg'
-    });
-  }
-
   public openWikiLink(linkName: string, event: MouseEvent) {
     event.stopPropagation();
     event.stopImmediatePropagation();
     MainAPI.send('APP_OPEN_EXTERNAL_LINK', Config.docs[linkName]);
+  }
+
+  public close() {
+    this.uiService.closeModal('settings');
   }
 
   /**
@@ -91,7 +86,9 @@ export class SettingsModalComponent implements OnInit, OnDestroy {
       fakerSeed: [SettingsDefault.fakerSeed],
       fileWatcherEnabled: [SettingsDefault.fileWatcherEnabled],
       storagePrettyPrint: [SettingsDefault.storagePrettyPrint],
-      enableTelemetry: [SettingsDefault.enableTelemetry]
+      enableTelemetry: [SettingsDefault.enableTelemetry],
+      startEnvironmentsOnLoad: [SettingsDefault.startEnvironmentsOnLoad],
+      logTransactions: [SettingsDefault.logTransactions]
     });
 
     // send new activeEnvironmentForm values to the store, one by one
@@ -131,7 +128,9 @@ export class SettingsModalComponent implements OnInit, OnDestroy {
               fakerSeed: settings.fakerSeed,
               fileWatcherEnabled: settings.fileWatcherEnabled,
               storagePrettyPrint: settings.storagePrettyPrint,
-              enableTelemetry: settings.enableTelemetry
+              enableTelemetry: settings.enableTelemetry,
+              startEnvironmentsOnLoad: settings.startEnvironmentsOnLoad,
+              logTransactions: settings.logTransactions
             },
             { emitEvent: false }
           );

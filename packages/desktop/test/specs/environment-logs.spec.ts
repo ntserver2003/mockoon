@@ -7,6 +7,7 @@ import { HttpCall } from '../libs/models';
 import navigation from '../libs/navigation';
 import routes from '../libs/routes';
 import settings from '../libs/settings';
+import utils from '../libs/utils';
 
 const endpointCall: HttpCall = {
   description: 'Call GET /prefix/endpoint/1',
@@ -15,7 +16,8 @@ const endpointCall: HttpCall = {
   body: 'requestbody',
   testedResponse: {
     body: 'responsebody',
-    status: 200
+    status: 200,
+    statusMessage: 'OK'
   }
 };
 
@@ -25,7 +27,8 @@ const endpointCall2: HttpCall = {
   method: 'GET',
   testedResponse: {
     body: 'created',
-    status: 201
+    status: 201,
+    statusMessage: 'Created'
   }
 };
 
@@ -34,7 +37,8 @@ const errorCall: HttpCall = {
   path: '/prefix/test',
   method: 'GET',
   testedResponse: {
-    status: 404
+    status: 404,
+    statusMessage: 'Not Found'
   }
 };
 
@@ -43,7 +47,8 @@ const binaryCall: HttpCall = {
   path: '/prefix/file',
   method: 'GET',
   testedResponse: {
-    status: 200
+    status: 200,
+    statusMessage: 'OK'
   }
 };
 
@@ -139,7 +144,12 @@ describe('Environment logs', () => {
 
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
-        await environmentsLogs.assertLogItem('Status: 200', 'response', 2, 1);
+        await environmentsLogs.assertLogItem(
+          'Status: 200 - OK',
+          'response',
+          2,
+          1
+        );
         await environmentsLogs.assertLogItem(
           'Content-length: 12',
           'response',
@@ -190,7 +200,12 @@ describe('Environment logs', () => {
 
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
-        await environmentsLogs.assertLogItem('Status: 404', 'response', 2, 1);
+        await environmentsLogs.assertLogItem(
+          'Status: 404 - Not Found',
+          'response',
+          2,
+          1
+        );
         await environmentsLogs.assertLogItem(
           'Content-length: 150',
           'response',
@@ -228,14 +243,13 @@ describe('Environment logs', () => {
         await routes.assertCount(2);
         await navigation.switchView('ENV_LOGS');
         await environmentsLogs.clickMockButton(1);
-        // close tooltips
-        await $('body').click({ x: 0, y: 0 });
+        await utils.closeTooltip();
         await navigation.switchView('ENV_ROUTES');
         await routes.assertCount(3);
       });
 
       it('should removed the prefix after mocking', async () => {
-        await routes.assertActiveMenuEntryText('GET\n/test');
+        await routes.assertActiveMenuEntryText('/test\nGET');
       });
     });
 
@@ -258,7 +272,12 @@ describe('Environment logs', () => {
 
       it('should verify response tab content', async () => {
         await environmentsLogs.switchTab('RESPONSE');
-        await environmentsLogs.assertLogItem('Status: 200', 'response', 2, 1);
+        await environmentsLogs.assertLogItem(
+          'Status: 200 - OK',
+          'response',
+          2,
+          1
+        );
         await environmentsLogs.assertLogItem(
           'Content-length: 8696',
           'response',
@@ -320,7 +339,12 @@ describe('Environment logs', () => {
     it('should assert presence on log page and verify selected entry', async () => {
       await navigation.switchView('ENV_LOGS');
       await environmentsLogs.assertActiveLogEntry(2);
-      await environmentsLogs.assertLogItem('Status: 200', 'response', 2, 1);
+      await environmentsLogs.assertLogItem(
+        'Status: 200 - OK',
+        'response',
+        2,
+        1
+      );
       await environmentsLogs.assertLogItem(' responsebody ', 'response', 6, 1);
     });
   });
@@ -357,6 +381,7 @@ describe('Environment logs', () => {
 
       it('should open request body in editor', async () => {
         await environmentsLogs.clickOpenBodyInEditorButton('request');
+        await browser.pause(100);
         await modals.assertExists();
         await modals.close();
       });
@@ -365,6 +390,7 @@ describe('Environment logs', () => {
         await environmentsLogs.switchTab('RESPONSE');
 
         await environmentsLogs.clickOpenBodyInEditorButton('response');
+        await browser.pause(100);
         await modals.assertExists();
         await modals.close();
       });
@@ -383,8 +409,7 @@ describe('Environment logs', () => {
 
       it('should changes log setting', async () => {
         await settings.open();
-        // Add 0 to default value of 1
-        await settings.setSettingValue('settings-log-max-count', '0');
+        await settings.setSettingValue('settings-log-max-count', '10');
         await modals.close();
       });
 
@@ -399,7 +424,7 @@ describe('Environment logs', () => {
         });
       }
 
-      it('should has 10 logs', async () => {
+      it('should have 10 logs', async () => {
         await environmentsLogs.assertCount(10);
       });
 
@@ -407,7 +432,7 @@ describe('Environment logs', () => {
         await http.assertCall(endpointCall);
       });
 
-      it('should still has 10 logs', async () => {
+      it('should still have 10 logs', async () => {
         await environmentsLogs.assertCount(10);
       });
     });

@@ -55,6 +55,7 @@ export class EditorComponent
   public timeoutSaving: any;
   private _options = {};
   private _readOnly = false;
+  private _hideInterface = false;
   private _theme = 'editor-theme';
   private _mode = 'html';
   private _autoUpdateContent = true;
@@ -63,12 +64,38 @@ export class EditorComponent
   private _text = '';
   private emitChanges = true;
 
-  constructor(elementRef: ElementRef, private zone: NgZone) {
+  constructor(
+    elementRef: ElementRef,
+    private zone: NgZone
+  ) {
     const element = elementRef.nativeElement;
     this.zone.runOutsideAngular(() => {
       this._editor = ace['edit'](element);
     });
     this._editor.$blockScrolling = Infinity;
+
+    // Remove ctrl-p key binding to avoid conflict with command palette
+    (this._editor.commands as any).removeCommand({
+      name: 'jumptomatching',
+      bindKey: {
+        win: 'Ctrl-P',
+        mac: 'Command-P'
+      },
+      exec: () => {
+        // Do nothing to effectively disable the key binding
+      }
+    });
+    // Remove ctrl-, key binding to avoid conflict with settings modal
+    (this._editor.commands as any).removeCommand({
+      name: 'showSettingsMenu',
+      bindKey: {
+        win: 'Ctrl-,',
+        mac: 'Command-,'
+      },
+      exec: () => {
+        // Do nothing to effectively disable the key binding
+      }
+    });
   }
 
   public get text() {
@@ -115,6 +142,11 @@ export class EditorComponent
   @Input()
   public set readOnly(readOnly: any) {
     this.setReadOnly(readOnly);
+  }
+
+  @Input()
+  public set hideCursor(hideCursor: any) {
+    this.setHideInterface(hideCursor);
   }
 
   @Input()
@@ -207,6 +239,13 @@ export class EditorComponent
   private setReadOnly(readOnly: any) {
     this._readOnly = readOnly;
     this._editor.setReadOnly(readOnly);
+  }
+
+  private setHideInterface(hideInterface: any) {
+    this._hideInterface = hideInterface;
+
+    this._editor.renderer.setShowGutter(!hideInterface);
+    (this._editor.renderer as any).$cursorLayer.element.style.display = 'none';
   }
 
   private setTheme(theme: any) {

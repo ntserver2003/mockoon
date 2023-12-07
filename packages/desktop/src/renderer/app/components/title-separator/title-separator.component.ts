@@ -3,11 +3,10 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnInit,
   Output
 } from '@angular/core';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
-import { Config } from 'src/shared/config';
+import { Config } from 'src/renderer/config';
 
 /**
  * Heading and subheading can be passed through simple string inputs or
@@ -19,7 +18,7 @@ import { Config } from 'src/shared/config';
   styleUrls: ['./title-separator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TitleSeparatorComponent implements OnInit {
+export class TitleSeparatorComponent {
   @Input()
   public heading: string;
   @Input()
@@ -38,10 +37,6 @@ export class TitleSeparatorComponent implements OnInit {
   public iconTooltip: string;
   @Output()
   public iconClicked = new EventEmitter<void>();
-
-  constructor() {}
-
-  ngOnInit() {}
 
   public linkClick() {
     MainAPI.send('APP_OPEN_EXTERNAL_LINK', Config.docs[this.docLink]);

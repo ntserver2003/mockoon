@@ -1,5 +1,11 @@
-import { app, BrowserWindow, Menu, shell } from 'electron';
-import { transports } from 'electron-log';
+import { BrowserWindow, Menu, shell } from 'electron';
+import { Config } from 'src/main/config';
+import { showFolderInExplorer } from 'src/main/libs/paths';
+import {
+  handleZoomIn,
+  handleZoomOut,
+  handleZoomReset
+} from 'src/main/libs/zoom';
 
 export const createMenu = (mainWindow: BrowserWindow): Menu => {
   const menu: any = [
@@ -176,22 +182,6 @@ export const createMenu = (mainWindow: BrowserWindow): Menu => {
         click: () => {
           mainWindow.webContents.send('APP_MENU', 'NEXT_ENVIRONMENT');
         }
-      },
-      {
-        id: 'MENU_PREVIOUS_ROUTE',
-        label: 'Select previous route',
-        accelerator: 'Shift+CmdOrCtrl+Up',
-        click: () => {
-          mainWindow.webContents.send('APP_MENU', 'PREVIOUS_ROUTE');
-        }
-      },
-      {
-        id: 'MENU_NEXT_ROUTE',
-        label: 'Select next route',
-        accelerator: 'Shift+CmdOrCtrl+Down',
-        click: () => {
-          mainWindow.webContents.send('APP_MENU', 'NEXT_ROUTE');
-        }
       }
     ]
   });
@@ -212,6 +202,70 @@ export const createMenu = (mainWindow: BrowserWindow): Menu => {
         click: () => {
           mainWindow.webContents.send('APP_MENU', 'EXPORT_OPENAPI_FILE');
         }
+      }
+    ]
+  });
+
+  menu.push({
+    label: 'View',
+    submenu: [
+      {
+        id: 'MENU_ZOOM_OUT',
+        label: 'Zoom out',
+        accelerator: 'CmdOrCtrl+NumSub',
+        click: () => {
+          handleZoomOut(mainWindow);
+        }
+      },
+      // zoom out aliases
+      {
+        label: 'Zoom out',
+        accelerator: 'CmdOrCtrl+-',
+        click: () => {
+          handleZoomOut(mainWindow);
+        },
+        visible: false
+      },
+      {
+        label: 'Reset zoom',
+        accelerator: 'CmdOrCtrl+Num0',
+        click: () => {
+          handleZoomReset(mainWindow);
+        }
+      },
+      // reset zoom aliases
+      {
+        label: 'Reset zoom',
+        accelerator: 'CmdOrCtrl+0',
+        click: () => {
+          handleZoomReset(mainWindow);
+        },
+        visible: false
+      },
+      {
+        id: 'MENU_ZOOM_IN',
+        label: 'Zoom in',
+        accelerator: 'CmdOrCtrl+Plus',
+        click: () => {
+          handleZoomIn(mainWindow);
+        }
+      },
+      // zoom in aliases
+      {
+        label: 'Zoom in',
+        accelerator: 'CmdOrCtrl+NumAdd',
+        click: () => {
+          handleZoomIn(mainWindow);
+        },
+        visible: false
+      },
+      {
+        label: 'Zoom in',
+        accelerator: 'CmdOrCtrl+=',
+        click: () => {
+          handleZoomIn(mainWindow);
+        },
+        visible: false
       }
     ]
   });
@@ -241,15 +295,13 @@ export const createMenu = (mainWindow: BrowserWindow): Menu => {
       {
         label: 'Show app data folder',
         click: () => {
-          shell.showItemInFolder(app.getPath('userData'));
+          showFolderInExplorer('userData');
         }
       },
       {
         label: 'Show logs folder',
         click: () => {
-          if (transports?.file?.getFile().path) {
-            shell.showItemInFolder(transports.file.getFile().path);
-          }
+          showFolderInExplorer('logs');
         }
       }
     ]
@@ -284,7 +336,7 @@ export const createMenu = (mainWindow: BrowserWindow): Menu => {
       },
       { type: 'separator' },
       {
-        label: 'Release notes',
+        label: `Release notes v${Config.appVersion}`,
         click: () => {
           mainWindow.webContents.send('APP_MENU', 'OPEN_CHANGELOG');
         }

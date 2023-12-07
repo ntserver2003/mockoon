@@ -10,24 +10,17 @@ import {
   OpenDialogOptions,
   OpenDialogReturnValue,
   SaveDialogOptions,
-  SaveDialogReturnValue
+  SaveDialogReturnValue,
+  app
 } from 'electron';
-import { PreMigrationSettings } from 'src/renderer/app/models/settings.model';
-import { ProtocolAction } from 'src/shared/models/protocol.model';
-import {
-  EnvironmentDescriptor,
-  Settings
-} from 'src/shared/models/settings.model';
+import { Settings } from 'src/shared/models/settings.model';
 
 export interface MainAPIModel {
-  invoke<T>(
-    channel: 'APP_NEW_STORAGE_MIGRATION'
-  ): Promise<EnvironmentDescriptor[]>;
   invoke(
     channel: 'APP_READ_ENVIRONMENT_DATA',
     path: string
   ): Promise<Environment>;
-  invoke(channel: 'APP_READ_SETTINGS_DATA'): Promise<PreMigrationSettings>;
+  invoke(channel: 'APP_READ_SETTINGS_DATA'): Promise<Settings>;
   invoke(
     channel: 'APP_WRITE_ENVIRONMENT_DATA',
     data: Environment,
@@ -95,14 +88,19 @@ export interface MainAPIModel {
     urlOrPath: string
   ): void;
   send(
+    channel: 'APP_SHOW_FOLDER',
+    path: Parameters<typeof app.getPath>[0]
+  ): void;
+  send(
     channel: 'APP_LOGS',
-    data: { type: 'error' | 'info'; message: string }
+    data: { type: 'error' | 'info'; message: string; payload?: any }
   ): void;
   send(
     channel: 'APP_SET_FAKER_OPTIONS',
     data: { locale: FakerAvailableLocales; seed: number }
   ): void;
   send(channel: 'APP_UPDATE_ENVIRONMENT', environments: Environments): void;
+  send(channel: 'APP_ZOOM', action: 'IN' | 'OUT' | 'RESET'): void;
 
   receive(
     channel: 'APP_SERVER_EVENT',
@@ -117,11 +115,17 @@ export interface MainAPIModel {
     ) => void
   ): void;
   receive(channel: 'APP_MENU', listener: (action: string) => void): void;
-  receive(channel: 'APP_UPDATE_AVAILABLE', listener: () => void): void;
+  receive(
+    channel: 'APP_UPDATE_AVAILABLE',
+    listener: (version: string) => void
+  ): void;
   receive(
     channel: 'APP_CUSTOM_PROTOCOL',
-    listener: (action: ProtocolAction, parameters: { url: string }) => void
+    listener:
+      | ((action: 'load-environment', parameters: { url: string }) => void)
+      | ((action: 'auth', parameters: { token: string }) => void)
   ): void;
+
   receive(
     channel: 'APP_FILE_EXTERNAL_CHANGE',
     listener: (previousUUID: string, environmentPath: string) => void

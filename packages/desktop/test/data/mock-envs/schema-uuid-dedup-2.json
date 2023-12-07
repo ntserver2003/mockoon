@@ -1,6 +1,6 @@
 {
   "uuid": "a93e9c88-62f9-40a7-be4f-9645e1988d8a",
-  "lastMigration": 24,
+  "lastMigration": 32,
   "name": "uuid dedup 2",
   "endpointPrefix": "",
   "latency": 0,
@@ -11,7 +11,6 @@
       "method": "get",
       "endpoint": "test",
       "documentation": "Test documentation",
-      "enabled": true,
       "responses": [
         {
           "uuid": "a93e9c88-62f9-40a7-be4f-9645e1988d8a",
@@ -28,10 +27,13 @@
           "fallbackTo404": false,
           "default": true,
           "databucketID": "",
-          "bodyType": "INLINE"
+          "bodyType": "INLINE",
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "type": "http"
     }
   ],
   "proxyMode": false,
@@ -41,7 +43,7 @@
   "proxyReqHeaders": [],
   "proxyResHeaders": [],
   "proxyRemovePrefix": false,
-  "hostname": "0.0.0.0",
+  "hostname": "",
   "tlsOptions": {
     "enabled": false,
     "type": "CERT",
@@ -58,5 +60,10 @@
       "id": "abcd",
       "value": "null"
     }
-  ]
+  ],
+  "folders": [],
+  "rootChildren": [
+    { "type": "route", "uuid": "a93e9c88-62f9-40a7-be4f-9645e1988d8a" }
+  ],
+  "callbacks": []
 }

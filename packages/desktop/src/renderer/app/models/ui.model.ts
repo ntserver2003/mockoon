@@ -1,17 +1,18 @@
 import { Observable, Subject } from 'rxjs';
 
-export type DraggableContainerNames =
-  | 'routes'
-  | 'databuckets'
-  | 'environments'
-  | 'routeResponses';
+export type DragState = {
+  // id of the dragged element (UUID or index)
+  elementId: number | string;
+  // arbitrary name of the dragged element's container (avoid drag and drop between different containers)
+  dragContainer: string;
+  // Id of the dragged element's parent or 'root'
+  parentId: string | 'root';
+  // Is the dragged element a container (can contain other elements like a folder)
+  isContainer: boolean;
+  nativeElement: HTMLElement;
+};
 
-export enum ScrollDirection {
-  TOP = 'TOP',
-  BOTTOM = 'BOTTOM'
-}
-
-export type ConfirmModalEvent = {
+export type ConfirmModalPayload = {
   title: string;
   text: string;
   confirmButtonText?: string;

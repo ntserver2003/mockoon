@@ -12,12 +12,14 @@ import { EnvironmentLogsTabsNameType } from 'src/renderer/app/models/store.model
 import { DataService } from 'src/renderer/app/services/data.service';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
 import { EventsService } from 'src/renderer/app/services/events.service';
+import { UIService } from 'src/renderer/app/services/ui.service';
 import {
   clearLogsAction,
   setActiveEnvironmentLogUUIDAction
 } from 'src/renderer/app/stores/actions';
 import { Store } from 'src/renderer/app/stores/store';
-import { Config } from 'src/shared/config';
+import { Config } from 'src/renderer/config';
+import { Settings } from 'src/shared/models/settings.model';
 
 type CollapseStates = {
   'request.general': boolean;
@@ -39,8 +41,10 @@ type CollapseStates = {
 export class EnvironmentLogsComponent implements OnInit {
   public environmentLogs$: Observable<EnvironmentLog[]>;
   public activeEnvironmentLogsTab$: Observable<EnvironmentLogsTabsNameType>;
+  public activeEnvironmentUUID$: Observable<string>;
   public activeEnvironmentLogUUID$: Observable<string>;
   public activeEnvironmentLog$: Observable<EnvironmentLog>;
+  public settings$: Observable<Settings>;
   public collapseStates: CollapseStates = {
     'request.general': false,
     'request.headers': false,
@@ -53,15 +57,19 @@ export class EnvironmentLogsComponent implements OnInit {
   };
   public menuSize = Config.defaultSecondaryMenuSize;
   public clearEnvironmentLogsRequested$ = new TimedBoolean();
+  public logsRecording$ = this.eventsService.logsRecording$;
 
   constructor(
     private store: Store,
     private environmentsService: EnvironmentsService,
     private dataService: DataService,
-    private eventsService: EventsService
+    private eventsService: EventsService,
+    private uiService: UIService
   ) {}
 
   ngOnInit() {
+    this.settings$ = this.store.select('settings');
+    this.activeEnvironmentUUID$ = this.store.select('activeEnvironmentUUID');
     this.environmentLogs$ = this.store.selectActiveEnvironmentLogs();
 
     this.activeEnvironmentLogUUID$ = this.environmentLogs$.pipe(
@@ -137,8 +145,8 @@ export class EnvironmentLogsComponent implements OnInit {
    *
    * @param logUUID
    */
-  public createRouteFromLog(logUUID: string) {
-    this.environmentsService.createRouteFromLog(logUUID);
+  public createRouteFromLog(environmentUUID: string, logUUID: string) {
+    this.environmentsService.createRouteFromLog(environmentUUID, logUUID, true);
   }
 
   /**
@@ -156,11 +164,15 @@ export class EnvironmentLogsComponent implements OnInit {
         ? GetEditorModeFromContentType(contentTypeHeader.value)
         : 'text';
 
-    this.eventsService.editorModalEvents.emit({
+    this.eventsService.editorModalPayload$.next({
+      title: `${location} body`,
       content: logResponseOrRequest.body,
-      mode: editorMode,
-      title: `${location} body`
+      editorConfig: {
+        mode: editorMode
+      }
     });
+
+    this.uiService.openModal('editor');
   }
 
   /**
@@ -172,5 +184,19 @@ export class EnvironmentLogsComponent implements OnInit {
         clearLogsAction(this.store.get('activeEnvironmentUUID'))
       );
     }
+  }
+
+  /**
+   * Start recording entering requests/responses
+   */
+  public startRecording(environmentUuid: string) {
+    this.environmentsService.startRecording(environmentUuid);
+  }
+
+  /**
+   * Stop recording entering requests/responses
+   */
+  public stopRecording(environmentUuid: string) {
+    this.environmentsService.stopRecording(environmentUuid);
   }
 }

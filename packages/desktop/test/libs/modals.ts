@@ -1,4 +1,4 @@
-import { ChainablePromiseElement } from 'webdriverio';
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import utils from '../libs/utils';
 
 class Modals {
@@ -19,7 +19,7 @@ class Modals {
   }
 
   private get closeBtn(): ChainablePromiseElement<WebdriverIO.Element> {
-    return $('.modal-dialog .modal-footer button');
+    return $('.modal-dialog .modal-footer button.modal-close');
   }
 
   private get title(): ChainablePromiseElement<WebdriverIO.Element> {

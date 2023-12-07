@@ -4,18 +4,9 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
-import { DataBucket, DataBucketDefault, Environment } from '@mockoon/commons';
-import {
-  distinctUntilKeyChanged,
-  filter,
-  map,
-  merge,
-  Observable,
-  Subject,
-  takeUntil,
-  tap
-} from 'rxjs';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { DataBucket, DataBucketDefault } from '@mockoon/commons';
+import { Observable, Subject, filter, map, merge, takeUntil, tap } from 'rxjs';
 import { FocusableInputs } from 'src/renderer/app/enums/ui.enum';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
 import { UIService } from 'src/renderer/app/services/ui.service';
@@ -28,10 +19,8 @@ import { Store } from 'src/renderer/app/stores/store';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnvironmentDatabucketsComponent implements OnInit, OnDestroy {
-  public activeEnvironment$: Observable<Environment>;
   public activeDatabucket$: Observable<DataBucket>;
-  public activeDatabucketForm: FormGroup;
-  public form: FormGroup;
+  public activeDatabucketForm: UntypedFormGroup;
   public focusableInputs = FocusableInputs;
   public bodyEditorConfig$: Observable<any>;
   public scrollToBottom = this.uiService.scrollToBottom;
@@ -41,12 +30,8 @@ export class EnvironmentDatabucketsComponent implements OnInit, OnDestroy {
     private uiService: UIService,
     private store: Store,
     private environmentsService: EnvironmentsService,
-    private formBuilder: FormBuilder
+    private formBuilder: UntypedFormBuilder
   ) {}
-
-  public get databuckets() {
-    return this.form.get('databuckets') as FormArray;
-  }
 
   ngOnInit() {
     this.activeDatabucket$ = this.store.selectActiveDatabucket();
@@ -92,7 +77,7 @@ export class EnvironmentDatabucketsComponent implements OnInit, OnDestroy {
     this.activeDatabucket$
       .pipe(
         filter((databucket) => !!databucket),
-        distinctUntilKeyChanged('uuid'),
+        this.store.distinctUUIDOrForce(),
         takeUntil(this.destroy$)
       )
       .subscribe((activeDatabucket) => {

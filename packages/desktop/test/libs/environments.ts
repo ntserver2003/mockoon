@@ -1,6 +1,8 @@
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import { resolve } from 'path';
-import { ChainablePromiseElement } from 'webdriverio';
-import contextMenu from '../libs/context-menu';
+import contextMenu, {
+  ContextMenuEnvironmentActions
+} from '../libs/context-menu';
 import dialogs from '../libs/dialogs';
 import utils from '../libs/utils';
 
@@ -12,6 +14,10 @@ class Environments {
     return $(
       '.environments-menu .nav:first-of-type .nav-item .nav-link.open-environment'
     );
+  }
+
+  public get recordingIndicator(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(`${this.activeMenuEntrySelector} app-svg[icon="record"]`);
   }
 
   private get startBtn(): ChainablePromiseElement<WebdriverIO.Element> {
@@ -55,6 +61,7 @@ class Environments {
   ): Promise<void> {
     await dialogs.open(resolve(`./tmp/storage/${environmentName}.json`));
     await this.openBtn.click();
+    await utils.closeTooltip();
 
     if (assertActive) {
       const activeEnvironment = await this.activeEnvironmentMenuEntry;
@@ -69,16 +76,25 @@ class Environments {
   }
 
   public async close(index: number): Promise<void> {
-    await contextMenu.click('environments', index, 4);
+    await contextMenu.click(
+      'environments',
+      index,
+      ContextMenuEnvironmentActions.CLOSE
+    );
     await browser.pause(500);
   }
 
   public async duplicate(index: number) {
-    await contextMenu.click('environments', index, 1);
+    await contextMenu.click(
+      'environments',
+      index,
+      ContextMenuEnvironmentActions.DUPLICATE
+    );
   }
 
   public async start(): Promise<void> {
     await this.startBtn.click();
+    await utils.closeTooltip();
     await this.runningEnvironmentMenuEntry.waitForExist();
   }
 
@@ -121,7 +137,7 @@ class Environments {
   public async assertMenuHTTPSIconPresent(reverse = false): Promise<void> {
     expect(
       await $(
-        `${this.activeMenuEntrySelector} .menu-subtitle app-svg[icon="https"]`
+        `${this.activeMenuEntrySelector} .nav-link-subtitle app-svg[icon="https"]`
       ).isExisting()
     ).toEqual(reverse ? false : true);
   }
@@ -136,9 +152,25 @@ class Environments {
     ).toEqual(true);
   }
 
+  public async assertMenuRecordingIconVisible(reverse = false): Promise<void> {
+    expect(
+      await $(
+        `${this.activeMenuEntrySelector} app-svg[icon="record"]${
+          reverse ? '.invisible' : '.visible'
+        }`
+      ).isExisting()
+    ).toEqual(true);
+  }
+
   public async assertNeedsRestart() {
     await $(
       '.environments-menu .menu-list .nav-item .nav-link.active.need-restart'
+    ).waitForExist();
+  }
+
+  public async assertStarted() {
+    await $(
+      '.environments-menu .menu-list .nav-item .nav-link.active.running'
     ).waitForExist();
   }
 }

@@ -1,4 +1,3 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,35 +7,37 @@ import {
   OnInit,
   Output
 } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import {
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormGroup
+} from '@angular/forms';
 import {
   BuildResponseRule,
+  ReorderAction,
   ResponseRule,
   ResponseRuleOperators,
   ResponseRuleTargets,
   Route,
-  RouteResponse
+  RouteResponse,
+  RulesDisablingResponseModes
 } from '@mockoon/commons';
 import { Observable, Subject } from 'rxjs';
-import {
-  distinctUntilKeyChanged,
-  filter,
-  takeUntil,
-  tap
-} from 'rxjs/operators';
+import { filter, takeUntil, tap } from 'rxjs/operators';
 import { TimedBoolean } from 'src/renderer/app/classes/timed-boolean';
 import { Texts } from 'src/renderer/app/constants/texts.constant';
-import { MoveArrayItem } from 'src/renderer/app/libs/utils.lib';
 import {
-  SelectOptionsList,
+  DropdownItems,
   ToggleItems
 } from 'src/renderer/app/models/common.model';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
+import { moveItemToTargetIndex } from 'src/renderer/app/stores/reducer-utils';
+import { Store } from 'src/renderer/app/stores/store';
 
 @Component({
   selector: 'app-route-response-rules',
   templateUrl: 'route-response-rules.component.html',
-  styleUrls: ['route-response-rules.component.scss'],
+  styleUrls: ['./route-response-rules.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RouteResponseRulesComponent implements OnInit, OnDestroy {
@@ -47,20 +48,22 @@ export class RouteResponseRulesComponent implements OnInit, OnDestroy {
   @Output()
   public ruleAdded: EventEmitter<any> = new EventEmitter();
   public routeResponse$: Observable<RouteResponse>;
-  public form: FormGroup;
-  public responseRuleTargets: SelectOptionsList<ResponseRuleTargets> = [
-    { code: 'body', text: 'Body' },
-    { code: 'query', text: 'Query string' },
-    { code: 'header', text: 'Header' },
-    { code: 'cookie', text: 'Cookie' },
-    { code: 'params', text: 'Route params' },
-    { code: 'request_number', text: 'Request number (starting at 1)' }
+  public form: UntypedFormGroup;
+  public readonly rulesDisablingResponseModes = RulesDisablingResponseModes;
+  public responseRuleTargets: DropdownItems<ResponseRuleTargets> = [
+    { value: 'body', label: 'Body' },
+    { value: 'query', label: 'Query string' },
+    { value: 'header', label: 'Header' },
+    { value: 'cookie', label: 'Cookie' },
+    { value: 'params', label: 'Route params' },
+    { value: 'request_number', label: 'Request number (starting at 1)' }
   ];
-  public responseRuleOperators: SelectOptionsList<ResponseRuleOperators> = [
-    { code: 'equals', text: 'equals' },
-    { code: 'regex', text: 'regex match' },
-    { code: 'null', text: 'null' },
-    { code: 'empty_array', text: 'empty array' }
+  public responseRuleOperators: DropdownItems<ResponseRuleOperators> = [
+    { value: 'equals', label: 'equals' },
+    { value: 'regex', label: 'regex' },
+    { value: 'regex_i', label: 'regex (i)' },
+    { value: 'null', label: 'null' },
+    { value: 'empty_array', label: 'empty array' }
   ];
   public modifierPlaceholders = {
     body: 'Object path or empty for full body',
@@ -73,6 +76,7 @@ export class RouteResponseRulesComponent implements OnInit, OnDestroy {
   public valuePlaceholders = {
     equals: 'Value',
     regex: 'Regex (without /../)',
+    regex_i: 'Regex (without /../i)',
     null: '',
     empty_array: ''
   };
@@ -100,11 +104,12 @@ export class RouteResponseRulesComponent implements OnInit, OnDestroy {
 
   constructor(
     private environmentsService: EnvironmentsService,
-    private formBuilder: FormBuilder
+    private formBuilder: UntypedFormBuilder,
+    private store: Store
   ) {}
 
   public get rules() {
-    return this.form.get('rules') as FormArray;
+    return this.form.get('rules') as UntypedFormArray;
   }
 
   ngOnInit() {
@@ -116,10 +121,12 @@ export class RouteResponseRulesComponent implements OnInit, OnDestroy {
     // subscribe to active route response to reset the form
     this.routeResponse$ = this.activeRouteResponse$.pipe(
       filter((activeRouteResponse) => !!activeRouteResponse),
-      distinctUntilKeyChanged('uuid'),
+      this.store.distinctUUIDOrForce(),
       tap((routeResponse) => {
         this.replaceRules(routeResponse.rules, false);
-        this.form.get('rulesOperator').setValue(routeResponse.rulesOperator);
+        this.form.get('rulesOperator').setValue(routeResponse.rulesOperator, {
+          emitEvent: false
+        });
       })
     );
 
@@ -149,25 +156,20 @@ export class RouteResponseRulesComponent implements OnInit, OnDestroy {
     this.ruleAdded.emit();
   }
 
-  public shouldOperatorBeDisabled(
-    target: string,
-    operator: ResponseRuleOperators
-  ): boolean {
-    const disablingTargets = this.operatorDisablingForTargets[target];
-    if (!disablingTargets) {
-      return null;
-    }
-
-    return disablingTargets.includes(operator) ? true : null;
-  }
-
-  public reorderResponseRules(event: CdkDragDrop<string[]>) {
-    const responseRules = MoveArrayItem<ResponseRule>(
-      this.rules.value,
-      event.previousIndex,
-      event.currentIndex
+  public reorderRules(reorderAction: ReorderAction) {
+    // store is driving the reordering
+    this.environmentsService.updateActiveRouteResponse(
+      {
+        rules: moveItemToTargetIndex(
+          this.rules.value,
+          reorderAction.reorderActionType,
+          reorderAction.sourceId as number,
+          reorderAction.targetId as number
+        )
+      },
+      // it's a store forced event, triggering a form update here
+      true
     );
-    this.replaceRules(responseRules, true);
   }
 
   /**

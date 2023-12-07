@@ -18,14 +18,13 @@ import { EventsService } from 'src/renderer/app/services/events.service';
 @Component({
   selector: 'app-context-menu',
   templateUrl: './context-menu.component.html',
-  styleUrls: ['./context-menu.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ContextMenuComponent implements OnInit {
   @Output()
   public itemClicked: EventEmitter<ContextMenuItemPayload> = new EventEmitter();
   public menuState$: Observable<ContentMenuState>;
-  private timeout: NodeJS.Timer;
+  private timeout: ReturnType<typeof setTimeout>;
 
   constructor(private eventsService: EventsService) {}
 

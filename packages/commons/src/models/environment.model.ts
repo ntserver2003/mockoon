@@ -1,4 +1,5 @@
-import { Header, Route } from './route.model';
+import { Folder, FolderChild } from './folder.model';
+import { BodyTypes, Header, Methods, Route } from './route.model';
 
 export type TLSOptionsType = 'PFX' | 'CERT';
 
@@ -8,6 +9,21 @@ export type DataBucket = {
   name: string;
   documentation: string;
   value: string;
+};
+
+export type Callback = {
+  uuid: string;
+  id: string;
+  name: string;
+  documentation: string;
+  method: Methods;
+  uri: string;
+  headers: Header[];
+  body?: string;
+  filePath?: string;
+  sendFileAsBody?: boolean;
+  bodyType: BodyTypes;
+  databucketID?: string;
 };
 
 /**
@@ -38,7 +54,9 @@ export type Environment = {
   hostname: string;
   endpointPrefix: string;
   latency: number;
+  folders: Folder[];
   routes: Route[];
+  rootChildren: FolderChild[];
   proxyMode: boolean;
   proxyRemovePrefix: boolean;
   proxyHost: string;
@@ -48,6 +66,7 @@ export type Environment = {
   cors: boolean;
   headers: Header[];
   data: DataBucket[];
+  callbacks: Callback[];
 };
 
 export type Environments = Environment[];

@@ -4,16 +4,10 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Environment, EnvironmentDefault } from '@mockoon/commons';
 import { merge, Observable, Subject } from 'rxjs';
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  takeUntil,
-  tap
-} from 'rxjs/operators';
+import { filter, map, takeUntil, tap } from 'rxjs/operators';
 import { ToggleItems } from 'src/renderer/app/models/common.model';
 import { DialogsService } from 'src/renderer/app/services/dialogs.service';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
@@ -26,8 +20,8 @@ import { Store } from 'src/renderer/app/stores/store';
 })
 export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
   public activeEnvironment$: Observable<Environment>;
-  public activeEnvironmentForm: FormGroup;
-  public tlsOptionsFormGroup: FormGroup;
+  public activeEnvironmentForm: UntypedFormGroup;
+  public tlsOptionsFormGroup: UntypedFormGroup;
   public Infinity = Infinity;
   public certTypes: ToggleItems = [
     {
@@ -42,7 +36,7 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private environmentsService: EnvironmentsService,
     private store: Store,
     private dialogsService: DialogsService
@@ -94,11 +88,11 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
 
     this.activeEnvironmentForm = this.formBuilder.group({
       name: [EnvironmentDefault.name],
+      hostname: [EnvironmentDefault.hostname],
       port: [EnvironmentDefault.port],
       endpointPrefix: [EnvironmentDefault.endpointPrefix],
       latency: [EnvironmentDefault.latency],
       tlsOptions: this.tlsOptionsFormGroup,
-      localhostOnly: [false],
       cors: [EnvironmentDefault.cors]
     });
 
@@ -106,17 +100,9 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
     merge(
       ...Object.keys(this.activeEnvironmentForm.controls).map((controlName) =>
         this.activeEnvironmentForm.get(controlName).valueChanges.pipe(
-          map((newValue) => {
-            if (controlName === 'localhostOnly') {
-              return {
-                hostname: newValue === true ? '127.0.0.1' : '0.0.0.0'
-              };
-            }
-
-            return {
-              [controlName]: newValue
-            };
-          })
+          map((newValue) => ({
+            [controlName]: newValue
+          }))
         )
       )
     )
@@ -137,16 +123,16 @@ export class EnvironmentSettingsComponent implements OnInit, OnDestroy {
     this.activeEnvironment$
       .pipe(
         filter((environment) => !!environment),
-        distinctUntilChanged(),
+        this.store.distinctUUIDOrForce(),
         tap((activeEnvironment) => {
           this.activeEnvironmentForm.setValue(
             {
               name: activeEnvironment.name,
+              hostname: activeEnvironment.hostname,
               port: activeEnvironment.port,
               endpointPrefix: activeEnvironment.endpointPrefix,
               latency: activeEnvironment.latency,
               tlsOptions: activeEnvironment.tlsOptions,
-              localhostOnly: activeEnvironment.hostname === '127.0.0.1',
               cors: activeEnvironment.cors
             },
             { emitEvent: false }

@@ -1,4 +1,4 @@
-import { Environment, Route } from '@mockoon/commons';
+import { Environment, Route, RouteType } from '@mockoon/commons';
 import { EditorModes } from 'src/renderer/app/models/editor.model';
 
 export const ArrayContainsObjectKey = (
@@ -41,22 +41,27 @@ export const GetEditorModeFromContentType = (
 };
 
 /**
- * Create a copy of the array and move a specific index
- * from one index to another
+ * Remove item from array by index
  *
  * @param items
  * @returns
  */
-export const MoveArrayItem = <T>(
-  items: T[],
-  sourceIndex: number,
-  targetIndex: number
-): T[] => {
-  const newItems = items.slice();
+export const RemoveAtIndex = <T>(items: T[], index: number): T =>
+  items.splice(index, 1)[0];
 
-  newItems.splice(targetIndex, 0, newItems.splice(sourceIndex, 1)[0]);
+/**
+ * Insert item in array at index
+ *
+ * @param items
+ * @param index
+ * @param item
+ * @returns
+ *
+ */
+export const InsertAtIndex = <T>(items: T[], index: number, item: T): T[] => {
+  items.splice(index, 0, item);
 
-  return newItems;
+  return items;
 };
 
 /**
@@ -83,17 +88,54 @@ export const HumanizeText = (text: string): string => {
  * @returns
  */
 export const BuildFullPath = (environment: Environment, route: Route) => {
-  let routeUrl =
-    (environment.tlsOptions.enabled ? 'https://' : 'http://') +
-    'localhost:' +
-    environment.port +
-    '/';
+  let routeUrl = `${environment.tlsOptions.enabled ? 'https://' : 'http://'}${
+    environment.hostname || 'localhost'
+  }:${environment.port}/`;
 
   if (environment.endpointPrefix) {
     routeUrl += environment.endpointPrefix + '/';
   }
 
-  routeUrl += route.endpoint;
+  // undo the regex escaping done in the route editor
+  routeUrl += route.endpoint.replace(/\\\(/g, '(').replace(/\\\)/g, ')');
 
   return routeUrl;
 };
+
+/**
+ * Check if two routes are duplicates, if:
+ * - CRUD + same endpoint
+ * - HTTP + same endpoint + same method
+ *
+ * @param routeA
+ * @param routeB
+ * @returns
+ */
+export const isRouteDuplicates = (
+  routeA: Route | Pick<Route, 'type' | 'endpoint' | 'method'>,
+  routeB: Route | Pick<Route, 'type' | 'endpoint' | 'method'>
+): boolean =>
+  (routeB.type === RouteType.CRUD &&
+    routeA.type === RouteType.CRUD &&
+    routeB.endpoint === routeA.endpoint) ||
+  (routeB.type === RouteType.HTTP &&
+    routeA.type === RouteType.HTTP &&
+    routeB.endpoint === routeA.endpoint &&
+    routeB.method === routeA.method);
+
+/**
+ * Check if an environment has a route that is a duplicate of the provided route
+ *
+ * @param environment
+ * @param route
+ * @param excludeRouteUUID
+ * @returns
+ */
+export const environmentHasRoute = (
+  environment: Environment,
+  route: Route | Pick<Route, 'type' | 'endpoint' | 'method'>
+): boolean =>
+  environment.routes.some((envRoute) => isRouteDuplicates(envRoute, route));
+
+export const trackByUuid = (item: any) => item.uuid;
+export const trackById = (item: any) => item.id;

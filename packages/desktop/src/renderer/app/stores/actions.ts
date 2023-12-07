@@ -1,49 +1,56 @@
 import {
+  Callback,
   DataBucket,
   Environment,
+  Folder,
+  ReorderAction,
   Route,
   RouteResponse
 } from '@mockoon/commons';
-import { DatabucketProperties } from 'src/renderer/app/models/databucket.model';
-import { EnvironmentLog } from 'src/renderer/app/models/environment-logs.model';
-import { EnvironmentProperties } from 'src/renderer/app/models/environment.model';
 import {
-  RouteProperties,
-  RouteResponseProperties
-} from 'src/renderer/app/models/route.model';
-import { SettingsProperties } from 'src/renderer/app/models/settings.model';
+  CallbackSpecTabNameType,
+  CallbackTabsNameType
+} from 'src/renderer/app/models/callback.model';
+import { DataSubject } from 'src/renderer/app/models/data.model';
+import { EnvironmentLog } from 'src/renderer/app/models/environment-logs.model';
 import {
   EnvironmentLogsTabsNameType,
-  EnvironmentStatusProperties,
+  EnvironmentStatus,
   TabsNameType,
-  UIStateProperties,
+  TemplatesTabsName,
+  UIState,
   ViewsNameType
 } from 'src/renderer/app/models/store.model';
 import { Toast } from 'src/renderer/app/models/toasts.model';
-import {
-  ReducerDirectionType,
-  ReducerIndexes
-} from 'src/renderer/app/stores/reducer';
+import { User } from 'src/renderer/app/models/user.model';
+import { ReducerDirectionType } from 'src/renderer/app/stores/reducer';
+import { Settings } from 'src/shared/models/settings.model';
 
 export const enum ActionTypes {
+  UPDATE_USER = 'UPDATE_USER',
   SET_ACTIVE_TAB = 'SET_ACTIVE_TAB',
+  SET_ACTIVE_TAB_IN_CALLBACK = 'SET_ACTIVE_TAB_IN_CALLBACK',
   SET_ACTIVE_VIEW = 'SET_ACTIVE_VIEW',
   SET_ACTIVE_ENVIRONMENT_LOG_TAB = 'SET_ACTIVE_ENVIRONMENT_LOG_TAB',
+  SET_ACTIVE_TEMPLATES_TAB = 'SET_ACTIVE_TEMPLATES_TAB',
   SET_ACTIVE_ENVIRONMENT = 'SET_ACTIVE_ENVIRONMENT',
   NAVIGATE_ENVIRONMENTS = 'NAVIGATE_ENVIRONMENTS',
-  MOVE_ENVIRONMENTS = 'MOVE_ENVIRONMENTS',
+  REORDER_ENVIRONMENTS = 'REORDER_ENVIRONMENTS',
   ADD_ENVIRONMENT = 'ADD_ENVIRONMENT',
   REMOVE_ENVIRONMENT = 'REMOVE_ENVIRONMENT',
   UPDATE_ENVIRONMENT = 'UPDATE_ENVIRONMENT',
   RELOAD_ENVIRONMENT = 'RELOAD_ENVIRONMENT',
+  REFRESH_ENVIRONMENT = 'REFRESH_ENVIRONMENT',
   UPDATE_ENVIRONMENT_STATUS = 'UPDATE_ENVIRONMENT_STATUS',
-  UPDATE_ENVIRONMENT_ROUTE_FILTER = 'UPDATE_ENVIRONMENT_ROUTE_FILTER',
-  UPDATE_ENVIRONMENT_DATABUCKET_FILTER = 'UPDATE_ENVIRONMENT_DATABUCKET_FILTER',
+  UPDATE_FILTER = 'UPDATE_FILTER',
   SET_ACTIVE_ROUTE = 'SET_ACTIVE_ROUTE',
-  NAVIGATE_ROUTES = 'NAVIGATE_ROUTES',
-  MOVE_ROUTES = 'MOVE_ROUTES',
-  MOVE_DATABUCKETS = 'MOVE_DATABUCKETS',
-  MOVE_ROUTE_RESPONSES = 'MOVE_ROUTE_RESPONSES',
+  REORDER_ROUTES = 'REORDER_ROUTES',
+  REORDER_DATABUCKETS = 'REORDER_DATABUCKETS',
+  REORDER_CALLBACKS = 'REORDER_CALLBACKS',
+  REORDER_ROUTE_RESPONSES = 'REORDER_ROUTE_RESPONSES',
+  ADD_FOLDER = 'ADD_FOLDER',
+  REMOVE_FOLDER = 'REMOVE_FOLDER',
+  UPDATE_FOLDER = 'UPDATE_FOLDER',
   ADD_ROUTE = 'ADD_ROUTE',
   REMOVE_ROUTE = 'REMOVE_ROUTE',
   REMOVE_ROUTE_RESPONSE = 'REMOVE_ROUTE_RESPONSE',
@@ -51,11 +58,14 @@ export const enum ActionTypes {
   SET_ACTIVE_ROUTE_RESPONSE = 'SET_ACTIVE_ROUTE_RESPONSE',
   ADD_ROUTE_RESPONSE = 'ADD_ROUTE_RESPONSE',
   UPDATE_ROUTE_RESPONSE = 'UPDATE_ROUTE_RESPONSE',
-  SET_DEFAULT_ROUTE_RESPONSE = 'SET_DEFAULT_ROUTE_RESPONSE',
   SET_ACTIVE_DATABUCKET = 'SET_ACTIVE_DATABUCKET',
+  SET_ACTIVE_CALLBACK = 'SET_ACTIVE_CALLBACK',
   ADD_DATABUCKET = 'ADD_DATABUCKET',
   REMOVE_DATABUCKET = 'REMOVE_DATABUCKET',
   UPDATE_DATABUCKET = 'UPDATE_DATABUCKET',
+  ADD_CALLBACK = 'ADD_CALLBACK',
+  REMOVE_CALLBACK = 'REMOVE_CALLBACK',
+  UPDATE_CALLBACK = 'UPDATE_CALLBACK',
   LOG_REQUEST = 'LOG_REQUEST',
   CLEAR_LOGS = 'CLEAR_LOGS',
   SET_ACTIVE_ENVIRONMENT_LOG = 'SET_ACTIVE_ENVIRONMENT_LOG',
@@ -65,10 +75,22 @@ export const enum ActionTypes {
   UPDATE_SETTINGS = 'UPDATE_SETTINGS',
   UPDATE_UI_STATE = 'UPDATE_UI_STATE',
   START_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT = 'START_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT',
-  FINALIZE_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT = 'FINALIZE_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT',
+  CANCEL_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT = 'CANCEL_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT',
   DUPLICATE_ROUTE_TO_ANOTHER_ENVIRONMENT = 'DUPLICATE_ROUTE_TO_ANOTHER_ENVIRONMENT',
-  DUPLICATE_DATABUCKET_TO_ANOTHER_ENVIRONMENT = 'DUPLICATE_DATABUCKET_TO_ANOTHER_ENVIRONMENT'
+  DUPLICATE_DATABUCKET_TO_ANOTHER_ENVIRONMENT = 'DUPLICATE_DATABUCKET_TO_ANOTHER_ENVIRONMENT',
+  DUPLICATE_CALLBACK_TO_ANOTHER_ENVIRONMENT = 'DUPLICATE_CALLBACK_TO_ANOTHER_ENVIRONMENT'
 }
+
+/**
+ * Update the user information
+ *
+ * @param properties - user properties to update
+ */
+export const updateUserAction = (properties: Partial<User>) =>
+  ({
+    type: ActionTypes.UPDATE_USER,
+    properties
+  }) as const;
 
 /**
  * Change the active route tab
@@ -79,7 +101,22 @@ export const setActiveTabAction = (activeTab: TabsNameType) =>
   ({
     type: ActionTypes.SET_ACTIVE_TAB,
     activeTab
-  } as const);
+  }) as const;
+
+/**
+ * Change the active tab in callback view.
+ *
+ * @param activeTab - id of the tab to set as active
+ */
+export const setActiveTabInCallbackViewAction = (
+  activeTab: CallbackTabsNameType,
+  activeSpecTab?: CallbackSpecTabNameType
+) =>
+  ({
+    type: ActionTypes.SET_ACTIVE_TAB_IN_CALLBACK,
+    activeTab,
+    activeSpecTab
+  }) as const;
 
 /**
  * Change the active main view
@@ -90,7 +127,7 @@ export const setActiveViewAction = (activeView: ViewsNameType) =>
   ({
     type: ActionTypes.SET_ACTIVE_VIEW,
     activeView
-  } as const);
+  }) as const;
 
 /**
  * Change the active environment logs tab
@@ -103,7 +140,18 @@ export const setActiveEnvironmentLogTabAction = (
   ({
     type: ActionTypes.SET_ACTIVE_ENVIRONMENT_LOG_TAB,
     activeTab
-  } as const);
+  }) as const;
+
+/**
+ * Change the active templates tab
+ *
+ * @param activeTab - id of the tab to set as active
+ */
+export const setActiveTemplatesTabAction = (activeTab: TemplatesTabsName) =>
+  ({
+    type: ActionTypes.SET_ACTIVE_TEMPLATES_TAB,
+    activeTab
+  }) as const;
 
 /**
  * Set the active environment (currently displayed)
@@ -114,7 +162,7 @@ export const setActiveEnvironmentAction = (environmentUUID: string) =>
   ({
     type: ActionTypes.SET_ACTIVE_ENVIRONMENT,
     environmentUUID
-  } as const);
+  }) as const;
 
 /**
  * Navigate between environments
@@ -125,51 +173,91 @@ export const navigateEnvironmentsAction = (direction: ReducerDirectionType) =>
   ({
     type: ActionTypes.NAVIGATE_ENVIRONMENTS,
     direction
-  } as const);
+  }) as const;
 
 /**
- * Move an environment
+ * Reorder environments
  *
- * @param indexes - indexes to and from which move
+ * @param reorderAction
+ * @returns
  */
-export const moveEnvironmentsAction = (indexes: ReducerIndexes) =>
+export const reorderEnvironmentsAction = (
+  reorderAction: ReorderAction<string>
+) =>
   ({
-    type: ActionTypes.MOVE_ENVIRONMENTS,
-    indexes
-  } as const);
+    type: ActionTypes.REORDER_ENVIRONMENTS,
+    reorderAction
+  }) as const;
 
 /**
- * Move a route
  *
- * @param indexes - indexes to and from which move
+ * Reorder routes and folders
+ *
+ * @param environmentUuid - environment UUID to which the routes belong to
+ * @param reorderAction
+ * @returns
  */
-export const moveRoutesAction = (indexes: ReducerIndexes) =>
+export const reorderRoutesAction = (
+  environmentUuid: string,
+  reorderAction: ReorderAction<string>
+) =>
   ({
-    type: ActionTypes.MOVE_ROUTES,
-    indexes
-  } as const);
+    type: ActionTypes.REORDER_ROUTES,
+    reorderAction,
+    environmentUuid
+  }) as const;
 
 /**
- * Move a route response
+ * Reorder route responses
  *
- * @param indexes - indexes to and from which move
+ * @param environmentUuid - environment UUID to which the route belongs to
+ * @param routeUuid - route UUID to which the route response belong to
+ * @param reorderAction
  */
-export const moveRouteResponsesAction = (indexes: ReducerIndexes) =>
+export const reorderRouteResponsesAction = (
+  environmentUuid: string,
+  routeUuid: string,
+  reorderAction: ReorderAction<string>
+) =>
   ({
-    type: ActionTypes.MOVE_ROUTE_RESPONSES,
-    indexes
-  } as const);
+    type: ActionTypes.REORDER_ROUTE_RESPONSES,
+    environmentUuid,
+    routeUuid,
+    reorderAction
+  }) as const;
 
 /**
- * Move a databucket
+ * Reorder databuckets
  *
- * @param indexes - indexes to and from which move
+ * @param environmentUuid - environment UUID to which the databuckets belong to
+ * @param reorderAction
  */
-export const moveDatabucketsAction = (indexes: ReducerIndexes) =>
+export const reorderDatabucketsAction = (
+  environmentUuid: string,
+  reorderAction: ReorderAction<string>
+) =>
   ({
-    type: ActionTypes.MOVE_DATABUCKETS,
-    indexes
-  } as const);
+    type: ActionTypes.REORDER_DATABUCKETS,
+    environmentUuid,
+    reorderAction
+  }) as const;
+
+/**
+ * Reorder callbacks
+ *
+ * @param environmentUuid - environment UUID to which the databuckets belong to
+ * @param reorderAction
+ * @returns
+ */
+export const reorderCallbacksAction = (
+  environmentUuid: string,
+  reorderAction: ReorderAction<string>
+) =>
+  ({
+    type: ActionTypes.REORDER_CALLBACKS,
+    environmentUuid,
+    reorderAction
+  }) as const;
 
 /**
  * Add a new environment
@@ -191,7 +279,7 @@ export const addEnvironmentAction = (
     type: ActionTypes.ADD_ENVIRONMENT,
     environment,
     ...options
-  } as const);
+  }) as const;
 
 /**
  * Remove an environment
@@ -202,18 +290,23 @@ export const removeEnvironmentAction = (environmentUUID: string) =>
   ({
     type: ActionTypes.REMOVE_ENVIRONMENT,
     environmentUUID
-  } as const);
+  }) as const;
 
 /**
  * Update an environment
  *
+ * @param environmentUuid - environment UUID to update
  * @param properties - properties to update
  */
-export const updateEnvironmentAction = (properties: EnvironmentProperties) =>
+export const updateEnvironmentAction = (
+  environmentUuid: string,
+  properties: Partial<Environment>
+) =>
   ({
     type: ActionTypes.UPDATE_ENVIRONMENT,
+    environmentUuid,
     properties
-  } as const);
+  }) as const;
 
 /**
  * Reload an environment
@@ -228,7 +321,18 @@ export const reloadEnvironmentAction = (
     type: ActionTypes.RELOAD_ENVIRONMENT,
     previousUUID,
     newEnvironment
-  } as const);
+  }) as const;
+
+/**
+ * Trigger a save of an environment without modyfing its state
+ *
+ * @param environmentUUID
+ */
+export const refreshEnvironmentAction = (environmentUUID: string) =>
+  ({
+    type: ActionTypes.REFRESH_ENVIRONMENT,
+    environmentUUID
+  }) as const;
 
 /**
  * Update an environment status
@@ -236,38 +340,29 @@ export const reloadEnvironmentAction = (
  * @param properties - properties to update
  */
 export const updateEnvironmentStatusAction = (
-  properties: EnvironmentStatusProperties,
-  environmentUUID
+  properties: Partial<EnvironmentStatus>,
+  environmentUUID: string
 ) =>
   ({
     type: ActionTypes.UPDATE_ENVIRONMENT_STATUS,
     properties,
     environmentUUID
-  } as const);
+  }) as const;
 
 /**
- * Update a route filter
+ * Update a filter
  *
- * @param properties - properties to update
+ * @param filterValue
  */
-export const updateEnvironmentroutesFilterAction = (routesFilter: string) =>
-  ({
-    type: ActionTypes.UPDATE_ENVIRONMENT_ROUTE_FILTER,
-    routesFilter
-  } as const);
-
-/**
- * Update a databucket filter
- *
- * @param databucketsFilter - databuckets filter to update
- */
-export const updateEnvironmentDatabucketsFilterAction = (
-  databucketsFilter: string
+export const updateFilterAction = (
+  filter: 'routes' | 'databuckets' | 'templates' | 'callbacks',
+  filterValue: string
 ) =>
   ({
-    type: ActionTypes.UPDATE_ENVIRONMENT_DATABUCKET_FILTER,
-    databucketsFilter
-  } as const);
+    type: ActionTypes.UPDATE_FILTER,
+    filter,
+    filterValue
+  }) as const;
 
 /**
  * Set the active route (currently displayed)
@@ -278,60 +373,136 @@ export const setActiveRouteAction = (routeUUID: string) =>
   ({
     type: ActionTypes.SET_ACTIVE_ROUTE,
     routeUUID
-  } as const);
+  }) as const;
 
 /**
- * Navigate between routes
+ * Add a folder
  *
- * @param direction - direction to which navigate to
+ * @param environmentUuid - environment UUID to which the folder is linked to
+ * @param folder - folder to add
+ * @param parentId - target parent (root or folder) Id * @param uiReset - indicates if the filters must be reset after addition
  */
-export const navigateRoutesAction = (direction: ReducerDirectionType) =>
+export const addFolderAction = (
+  environmentUuid: string,
+  folder: Folder,
+  parentId: string | 'root',
+  uiReset: boolean
+) =>
   ({
-    type: ActionTypes.NAVIGATE_ROUTES,
-    direction
-  } as const);
+    type: ActionTypes.ADD_FOLDER,
+    environmentUuid,
+    folder,
+    parentId,
+    uiReset
+  }) as const;
+
+/**
+ * Remove a folder
+ *
+ * @param environmentUuid - environment UUID to which the folder is linked to
+ * @param folderUuid - folder UUID to remove
+ */
+export const removeFolderAction = (
+  environmentUuid: string,
+  folderUuid: string
+) =>
+  ({
+    type: ActionTypes.REMOVE_FOLDER,
+    environmentUuid,
+    folderUuid
+  }) as const;
+
+/**
+ * Update a folder
+ *
+ * @param environmentUuid - environment UUID to which the folder is linked to
+ * @param folderUuid - UUID of the folder to update
+ * @param properties - properties to update
+ */
+export const updateFolderAction = (
+  environmentUuid: string,
+  folderUuid: string,
+  properties: Partial<Folder>
+) =>
+  ({
+    type: ActionTypes.UPDATE_FOLDER,
+    environmentUuid,
+    folderUuid,
+    properties
+  }) as const;
 
 /**
  * Add a route
  *
+ * @param environmentUuid - environment UUID to which the route is linked to
  * @param route - route to add
+ * @param parentId - target parent (root or folder) Id
+ * @param uiReset - indicates if the route must be focused after addition and the UI reset (switch tabs)
  */
-export const addRouteAction = (route: Route, afterUUID?: string) =>
+export const addRouteAction = (
+  environmentUuid: string,
+  route: Route,
+  parentId: string | 'root',
+  uiReset: boolean
+) =>
   ({
     type: ActionTypes.ADD_ROUTE,
     route,
-    afterUUID
-  } as const);
+    parentId,
+    uiReset,
+    environmentUuid
+  }) as const;
 
 /**
  * Remove a route
  *
- * @param routeUUID - route UUID to remove
+ * @param environmentUuid - environment UUID to which the route is linked to
+ * @param routeUuid - route UUID to remove
  */
-export const removeRouteAction = (routeUUID: string) =>
+export const removeRouteAction = (environmentUuid: string, routeUuid: string) =>
   ({
     type: ActionTypes.REMOVE_ROUTE,
-    routeUUID
-  } as const);
+    routeUuid,
+    environmentUuid
+  }) as const;
 
 /**
- * Remove the currently selected route response
+ * Remove a route response
+ *
+ * @param environmentUuid - environment UUID to which the route response is linked to
+ * @param routeUuid - route UUID to which the route response is linked to
+ * @param routeResponseUuid - route response UUID to update
  */
-export const removeRouteResponseAction = () =>
+export const removeRouteResponseAction = (
+  environmentUuid: string,
+  routeUuid: string,
+  routeResponseUuid: string
+) =>
   ({
-    type: ActionTypes.REMOVE_ROUTE_RESPONSE
-  } as const);
+    type: ActionTypes.REMOVE_ROUTE_RESPONSE,
+    environmentUuid,
+    routeUuid,
+    routeResponseUuid
+  }) as const;
 
 /**
  * Update a route
  *
+ * @param environmentUuid - environment UUID to which the route is linked to
+ * @param routeUuid - route UUID to update
  * @param properties - properties to update
  */
-export const updateRouteAction = (properties: RouteProperties) =>
+export const updateRouteAction = (
+  environmentUuid: string,
+  routeUuid: string,
+  properties: Partial<Route>
+) =>
   ({
     type: ActionTypes.UPDATE_ROUTE,
+    environmentUuid,
+    routeUuid,
     properties
-  } as const);
+  }) as const;
 
 /**
  * Set the active route response (currently displayed)
@@ -342,23 +513,32 @@ export const setActiveRouteResponseAction = (routeResponseUUID: string) =>
   ({
     type: ActionTypes.SET_ACTIVE_ROUTE_RESPONSE,
     routeResponseUUID
-  } as const);
+  }) as const;
 
 /**
  * Add a new route response
  *
+ * @param environmentUuid - environment UUID to which the route response is linked to
+ * @param routeUuid - route UUID to which the route response is linked to
  * @param routeResponse - route response to add
- * @param isDuplication - (optional) indicates if the addition is a duplication.
+ * @param uiReset - indicates if the route response must be focused after addition
+ * @param insertAfterUuid - route response UUID after which the new route response must be inserted
  */
 export const addRouteResponseAction = (
+  environmentUuid: string,
+  routeUuid: string,
   routeResponse: RouteResponse,
-  isDuplication?: boolean
+  uiReset: boolean,
+  insertAfterUuid?: string
 ) =>
   ({
     type: ActionTypes.ADD_ROUTE_RESPONSE,
+    environmentUuid,
+    routeUuid,
     routeResponse,
-    isDuplication
-  } as const);
+    uiReset,
+    insertAfterUuid
+  }) as const;
 
 /**
  * Finalizes route movement to another environment
@@ -371,28 +551,28 @@ export const duplicateRouteToAnotherEnvironmentAction = (
     type: ActionTypes.DUPLICATE_ROUTE_TO_ANOTHER_ENVIRONMENT,
     route,
     targetEnvironmentUUID
-  } as const);
+  }) as const;
 
 /**
  * Triggers movement of an entity to another environment
  */
 export const startEntityDuplicationToAnotherEnvironmentAction = (
   subjectUUID: string,
-  subject: string
+  subject: DataSubject
 ) =>
   ({
     type: ActionTypes.START_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT,
     subjectUUID,
     subject
-  } as const);
+  }) as const;
 
 /**
  * Cancels out entity movement
  */
-export const finalizeEntityDuplicationToAnotherEnvironmentAction = () =>
+export const cancelEntityDuplicationToAnotherEnvironmentAction = () =>
   ({
-    type: ActionTypes.FINALIZE_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT
-  } as const);
+    type: ActionTypes.CANCEL_ENTITY_DUPLICATION_TO_ANOTHER_ENVIRONMENT
+  }) as const;
 
 /**
  * Finalizes databucket movement to another environment
@@ -405,31 +585,42 @@ export const duplicateDatabucketToAnotherEnvironmentAction = (
     type: ActionTypes.DUPLICATE_DATABUCKET_TO_ANOTHER_ENVIRONMENT,
     databucket,
     targetEnvironmentUUID
-  } as const);
+  }) as const;
 
 /**
- * Update the active route response
+ * Finalizes databucket movement to another environment
+ */
+export const duplicateCallbackToAnotherEnvironmentAction = (
+  callback: Callback,
+  targetEnvironmentUUID: string
+) =>
+  ({
+    type: ActionTypes.DUPLICATE_CALLBACK_TO_ANOTHER_ENVIRONMENT,
+    callback,
+    targetEnvironmentUUID
+  }) as const;
+
+/**
+ * Update a route response
  *
+ * @param environmentUuid - environment UUID to which the route response is linked to
+ * @param routeUuid - route UUID to which the route response is linked to
+ * @param routeResponseUuid - route response UUID to update
  * @param properties - properties to update
  */
 export const updateRouteResponseAction = (
-  properties: RouteResponseProperties
+  environmentUuid: string,
+  routeUuid: string,
+  routeResponseUuid: string,
+  properties: Partial<RouteResponse>
 ) =>
   ({
     type: ActionTypes.UPDATE_ROUTE_RESPONSE,
+    environmentUuid,
+    routeUuid,
+    routeResponseUuid,
     properties
-  } as const);
-
-/**
- * Set a route response as default
- *
- * @param routeResponseIndex - route response index
- */
-export const setDefaultRouteResponseAction = (routeResponseIndex: number) =>
-  ({
-    type: ActionTypes.SET_DEFAULT_ROUTE_RESPONSE,
-    routeResponseIndex
-  } as const);
+  }) as const;
 
 /**
  * Set the active databucket (currently displayed)
@@ -440,44 +631,132 @@ export const setActiveDatabucketAction = (databucketUUID: string) =>
   ({
     type: ActionTypes.SET_ACTIVE_DATABUCKET,
     databucketUUID
-  } as const);
+  }) as const;
+
+/**
+ * Set the active callback (currently displayed)
+ *
+ * @param callbackUUID - callback UUID to set as active
+ */
+export const setActiveCallbackAction = (callbackUUID: string) =>
+  ({
+    type: ActionTypes.SET_ACTIVE_CALLBACK,
+    callbackUUID
+  }) as const;
 
 /**
  * Add a databucket
  *
+ * @param environmentUuid - environment UUID to which the databucket is linked to
  * @param databucket - databucket to add
+ * @param insertAfterUuid - databucket UUID after which the new databucket must be inserted
+ * @param uiReset - indicates if the databucket must be selected after addition
  */
 export const addDatabucketAction = (
+  environmentUuid: string,
   databucket: DataBucket,
-  afterUUID?: string
+  uiReset: boolean,
+  insertAfterUuid?: string
 ) =>
   ({
     type: ActionTypes.ADD_DATABUCKET,
+    environmentUuid,
     databucket,
-    afterUUID
-  } as const);
+    uiReset,
+    insertAfterUuid
+  }) as const;
+
+/**
+ *
+ * @param environmentUuid - environment UUID to which the callback is linked to
+ * @param callback - callback to add
+ * @param uiReset - indicates if the callback must be selected after addition, filters reset
+ * @param insertAfterUuid - callback UUID after which the new callback must be inserted
+ * @returns
+ */
+export const addCallbackAction = (
+  environmentUuid: string,
+  callback: Callback,
+  uiReset: boolean,
+  insertAfterUuid?: string
+) =>
+  ({
+    type: ActionTypes.ADD_CALLBACK,
+    environmentUuid,
+    callback,
+    uiReset,
+    insertAfterUuid
+  }) as const;
 
 /**
  * Remove a databucket
  *
- * @param databucketUUID - databucket UUID to remove
+ * @param environmentUuid - environment UUID to which the databucket is linked to
+ * @param databucketUuid - databucket UUID to remove
  */
-export const removeDatabucketAction = (databucketUUID: string) =>
+export const removeDatabucketAction = (
+  environmentUuid: string,
+  databucketUuid: string
+) =>
   ({
     type: ActionTypes.REMOVE_DATABUCKET,
-    databucketUUID
-  } as const);
+    environmentUuid,
+    databucketUuid
+  }) as const;
+
+/**
+ * Remove a callback
+ * @param environmentUuid - environment UUID to which the callback is linked to
+ * @param callbackUuid - callback UUID to remove
+ * @returns
+ */
+export const removeCallbackAction = (
+  environmentUuid: string,
+  callbackUuid: string
+) =>
+  ({
+    type: ActionTypes.REMOVE_CALLBACK,
+    environmentUuid,
+    callbackUuid
+  }) as const;
 
 /**
  * Update a databucket
  *
+ * @param environmentUuid - environment UUID to which the databucket is linked to
+ * @param databucketUuid - databucket UUID to update
  * @param properties - properties to update
  */
-export const updateDatabucketAction = (properties: DatabucketProperties) =>
+export const updateDatabucketAction = (
+  environmentUuid: string,
+  databucketUuid: string,
+  properties: Partial<DataBucket>
+) =>
   ({
     type: ActionTypes.UPDATE_DATABUCKET,
+    environmentUuid,
+    databucketUuid,
     properties
-  } as const);
+  }) as const;
+
+/**
+ * Update a callback
+ *
+ * @param environmentUuid - environment UUID to which the callback is linked to
+ * @param callbackUuid - callback UUID to update
+ * @param properties - properties to update
+ */
+export const updateCallbackAction = (
+  environmentUuid: string,
+  callbackUuid: string,
+  properties: Partial<Callback>
+) =>
+  ({
+    type: ActionTypes.UPDATE_CALLBACK,
+    environmentUuid,
+    callbackUuid,
+    properties
+  }) as const;
 
 /**
  * Log the request (request and response)
@@ -494,7 +773,7 @@ export const logRequestAction = (
     type: ActionTypes.LOG_REQUEST,
     environmentUUID,
     logItem
-  } as const);
+  }) as const;
 
 /**
  * Clear an environment logs
@@ -505,7 +784,7 @@ export const clearLogsAction = (environmentUUID: string) =>
   ({
     type: ActionTypes.CLEAR_LOGS,
     environmentUUID
-  } as const);
+  }) as const;
 
 /**
  * Set the active environment log UUID for a given environment
@@ -521,7 +800,7 @@ export const setActiveEnvironmentLogUUIDAction = (
     type: ActionTypes.SET_ACTIVE_ENVIRONMENT_LOG,
     environmentUUID,
     activeEnvironmentLogUUID
-  } as const);
+  }) as const;
 
 /**
  * Add a toast
@@ -532,7 +811,7 @@ export const addToastAction = (toast: Toast) =>
   ({
     type: ActionTypes.ADD_TOAST,
     toast
-  } as const);
+  }) as const;
 
 /**
  * Remove a toast
@@ -543,49 +822,55 @@ export const removeToastAction = (toastUUID: string) =>
   ({
     type: ActionTypes.REMOVE_TOAST,
     toastUUID
-  } as const);
+  }) as const;
 
 /**
  * Update user settings
  *
  * @param properties - properties to update
  */
-export const updateSettingsAction = (properties: SettingsProperties) =>
+export const updateSettingsAction = (properties: Partial<Settings>) =>
   ({
     type: ActionTypes.UPDATE_SETTINGS,
     properties
-  } as const);
+  }) as const;
 
 /**
  * Update UI state
  *
  * @param properties - properties to update
  */
-export const updateUIStateAction = (properties: UIStateProperties) =>
+export const updateUIStateAction = (properties: Partial<UIState>) =>
   ({
     type: ActionTypes.UPDATE_UI_STATE,
     properties
-  } as const);
+  }) as const;
 
 export type Actions =
+  | ReturnType<typeof updateUserAction>
   | ReturnType<typeof setActiveTabAction>
+  | ReturnType<typeof setActiveTabInCallbackViewAction>
   | ReturnType<typeof setActiveViewAction>
   | ReturnType<typeof setActiveEnvironmentLogTabAction>
+  | ReturnType<typeof setActiveTemplatesTabAction>
   | ReturnType<typeof setActiveEnvironmentAction>
   | ReturnType<typeof navigateEnvironmentsAction>
-  | ReturnType<typeof moveEnvironmentsAction>
-  | ReturnType<typeof moveRoutesAction>
-  | ReturnType<typeof moveRouteResponsesAction>
-  | ReturnType<typeof moveDatabucketsAction>
+  | ReturnType<typeof reorderEnvironmentsAction>
+  | ReturnType<typeof reorderRoutesAction>
+  | ReturnType<typeof reorderRouteResponsesAction>
+  | ReturnType<typeof reorderDatabucketsAction>
+  | ReturnType<typeof reorderCallbacksAction>
   | ReturnType<typeof addEnvironmentAction>
   | ReturnType<typeof removeEnvironmentAction>
   | ReturnType<typeof updateEnvironmentAction>
   | ReturnType<typeof reloadEnvironmentAction>
+  | ReturnType<typeof refreshEnvironmentAction>
   | ReturnType<typeof updateEnvironmentStatusAction>
-  | ReturnType<typeof updateEnvironmentroutesFilterAction>
-  | ReturnType<typeof updateEnvironmentDatabucketsFilterAction>
+  | ReturnType<typeof updateFilterAction>
   | ReturnType<typeof setActiveRouteAction>
-  | ReturnType<typeof navigateRoutesAction>
+  | ReturnType<typeof addFolderAction>
+  | ReturnType<typeof removeFolderAction>
+  | ReturnType<typeof updateFolderAction>
   | ReturnType<typeof addRouteAction>
   | ReturnType<typeof removeRouteAction>
   | ReturnType<typeof removeRouteResponseAction>
@@ -593,11 +878,14 @@ export type Actions =
   | ReturnType<typeof setActiveRouteResponseAction>
   | ReturnType<typeof addRouteResponseAction>
   | ReturnType<typeof updateRouteResponseAction>
-  | ReturnType<typeof setDefaultRouteResponseAction>
   | ReturnType<typeof setActiveDatabucketAction>
+  | ReturnType<typeof setActiveCallbackAction>
   | ReturnType<typeof addDatabucketAction>
   | ReturnType<typeof removeDatabucketAction>
   | ReturnType<typeof updateDatabucketAction>
+  | ReturnType<typeof addCallbackAction>
+  | ReturnType<typeof removeCallbackAction>
+  | ReturnType<typeof updateCallbackAction>
   | ReturnType<typeof logRequestAction>
   | ReturnType<typeof clearLogsAction>
   | ReturnType<typeof setActiveEnvironmentLogUUIDAction>
@@ -606,6 +894,7 @@ export type Actions =
   | ReturnType<typeof updateUIStateAction>
   | ReturnType<typeof updateSettingsAction>
   | ReturnType<typeof startEntityDuplicationToAnotherEnvironmentAction>
-  | ReturnType<typeof finalizeEntityDuplicationToAnotherEnvironmentAction>
+  | ReturnType<typeof cancelEntityDuplicationToAnotherEnvironmentAction>
   | ReturnType<typeof duplicateRouteToAnotherEnvironmentAction>
-  | ReturnType<typeof duplicateDatabucketToAnotherEnvironmentAction>;
+  | ReturnType<typeof duplicateDatabucketToAnotherEnvironmentAction>
+  | ReturnType<typeof duplicateCallbackToAnotherEnvironmentAction>;

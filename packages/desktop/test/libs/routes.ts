@@ -1,10 +1,34 @@
 import { BodyTypes, LogicalOperators, ResponseRule } from '@mockoon/commons';
-import { ChainablePromiseElement } from 'webdriverio';
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import { TabsNameType } from '../../src/renderer/app/models/store.model';
-import contextMenu from '../libs/context-menu';
+import contextMenu, {
+  ContextMenuFolderActions,
+  ContextMenuRouteActions
+} from '../libs/context-menu';
 import utils from '../libs/utils';
 
+export enum RoutesMenuActions {
+  OPEN_TEMPLATES = 1,
+  ADD_CRUD_ROUTE = 2,
+  ADD_HTTP_ROUTE = 3,
+  ADD_FOLDER = 4
+}
 class Routes {
+  private rulesTargetIndexes = {
+    body: 1,
+    query: 2,
+    header: 3,
+    cookie: 4,
+    params: 5,
+    request_number: 6
+  };
+  private rulesOperatorsIndexes = {
+    equals: 1,
+    regex: 2,
+    regex_i: 3,
+    null: 4,
+    empty_array: 5
+  };
   private activeMenuEntrySelector = '.routes-menu .nav-item .nav-link.active';
 
   public get bodyTypeToggle(): ChainablePromiseElement<WebdriverIO.Element> {
@@ -43,8 +67,12 @@ class Routes {
     return $('#route-responses-menu .nav.nav-tabs .nav-item:nth-child(2)');
   }
 
-  public get settingsTab(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get callbacksTab(): ChainablePromiseElement<WebdriverIO.Element> {
     return $('#route-responses-menu .nav.nav-tabs .nav-item:nth-child(4)');
+  }
+
+  public get settingsTab(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#route-responses-menu .nav.nav-tabs .nav-item:nth-child(5)');
   }
 
   public get randomResponseBtn(): ChainablePromiseElement<WebdriverIO.Element> {
@@ -56,6 +84,18 @@ class Routes {
   }
   public get disableRulesResponseBtn(): ChainablePromiseElement<WebdriverIO.Element> {
     return $('#response-modes-DISABLE_RULES');
+  }
+
+  public get fallbackResponseBtn(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#response-modes-FALLBACK');
+  }
+
+  public get rulesWarningMessage(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#disabled-rules-warning-message');
+  }
+
+  public get rulesWarningIcon(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#disabled-rules-warning-icon');
   }
 
   public get contentTypeElement(): ChainablePromiseElement<WebdriverIO.Element> {
@@ -78,6 +118,14 @@ class Routes {
     return $('#route-responses-menu #route-response-duplication-button');
   }
 
+  public get routeResponseStatusDropdown(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#status-code-dropdown');
+  }
+
+  public get routeResponseDropdownlabel(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#route-responses-dropdown .dropdown-toggle-label');
+  }
+
   public get routeResponseDropdown(): ChainablePromiseElement<WebdriverIO.Element> {
     return $('.route-responses-dropdown-menu');
   }
@@ -90,12 +138,40 @@ class Routes {
     return $('app-custom-select[formcontrolname="databucketID"]');
   }
 
-  private get addBtn(): ChainablePromiseElement<WebdriverIO.Element> {
-    return $('.routes-menu .nav:first-of-type .nav-item .nav-link');
+  public get idPropertyDataBucketSelect(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.form-control[formcontrolname="crudKey"]');
+  }
+
+  public get addMenu(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('#routes-add-dropdown-menu');
+  }
+
+  public get templateGenerateBtn(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.modal-content #templates-generate-button');
+  }
+
+  public get templateGenerateOptions(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.modal-content #templates-generate-options');
+  }
+
+  public get templatePromptInput(): ChainablePromiseElement<WebdriverIO.Element> {
+    return $('.modal-content input.form-control');
   }
 
   private get activeMenuEntry(): ChainablePromiseElement<WebdriverIO.Element> {
     return $(this.activeMenuEntrySelector);
+  }
+
+  public getTemplateTab(
+    index: 1 | 2
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(`.modal-content .nav .nav-item:nth-child(${index}) .nav-link`);
+  }
+
+  public getAddMenuEntry(
+    index: RoutesMenuActions
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(`#routes-add-dropdown-menu .dropdown-item:nth-child(${index})`);
   }
 
   public getResponseRule(
@@ -108,7 +184,7 @@ class Routes {
     index: number
   ): ChainablePromiseElement<WebdriverIO.Element> {
     return $(
-      `app-route-response-rules .rule-item:nth-of-type(${index}) .form-inline select[formcontrolname="target"]`
+      `app-route-response-rules .rule-item:nth-of-type(${index})  [formcontrolname="target"]`
     );
   }
 
@@ -116,7 +192,7 @@ class Routes {
     index: number
   ): ChainablePromiseElement<WebdriverIO.Element> {
     return $(
-      `app-route-response-rules .rule-item:nth-of-type(${index}) .form-inline input[formcontrolname="modifier"]`
+      `app-route-response-rules .rule-item:nth-of-type(${index})  input[formcontrolname="modifier"]`
     );
   }
 
@@ -124,7 +200,7 @@ class Routes {
     index: number
   ): ChainablePromiseElement<WebdriverIO.Element> {
     return $(
-      `app-route-response-rules .rule-item:nth-of-type(${index}) .form-inline app-toggle[formcontrolname="invert"]`
+      `app-route-response-rules .rule-item:nth-of-type(${index})  app-toggle[formcontrolname="invert"]`
     );
   }
 
@@ -132,7 +208,7 @@ class Routes {
     index: number
   ): ChainablePromiseElement<WebdriverIO.Element> {
     return $(
-      `app-route-response-rules .rule-item:nth-of-type(${index}) .form-inline select[formcontrolname="operator"]`
+      `app-route-response-rules .rule-item:nth-of-type(${index}) [formcontrolname="operator"]`
     );
   }
 
@@ -140,7 +216,7 @@ class Routes {
     index: number
   ): ChainablePromiseElement<WebdriverIO.Element> {
     return $(
-      `app-route-response-rules .rule-item:nth-of-type(${index}) .form-inline input[formcontrolname="value"]`
+      `app-route-response-rules .rule-item:nth-of-type(${index}) input[formcontrolname="value"]`
     );
   }
 
@@ -160,22 +236,108 @@ class Routes {
     );
   }
 
-  public async select(routeIndex: number): Promise<void> {
+  public getMenuItem(
+    index: number
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(`.routes-menu .menu-list .nav-item:nth-child(${index}) .nav-link`);
+  }
+
+  public getMenuItemEditable(
+    index: number
+  ): ChainablePromiseElement<WebdriverIO.Element> {
+    return $(
+      `.routes-menu .menu-list .nav-item:nth-child(${index}) .nav-link app-editable-element`
+    );
+  }
+
+  public async assertMenuItemEditable(index: number): Promise<void> {
     await $(
-      `.routes-menu .menu-list .nav-item:nth-child(${routeIndex}) .nav-link`
-    ).click();
+      `.routes-menu .menu-list .nav-item:nth-child(${index}) .nav-link app-editable-element span`
+    ).waitForExist({
+      reverse: true
+    });
+    await $(
+      `.routes-menu .menu-list .nav-item:nth-child(${index}) .nav-link app-editable-element input`
+    ).waitForExist();
+  }
+
+  public async setMenuItemEditableText(
+    index: number,
+    value: string
+  ): Promise<void> {
+    await browser.keys(['Control', 'a', 'Backspace']);
+    await $(
+      `.routes-menu .menu-list .nav-item:nth-child(${index}) .nav-link app-editable-element input`
+    ).addValue(value);
+    await browser.keys(['Enter']);
+  }
+
+  public async select(routeIndex: number): Promise<void> {
+    await (await this.getMenuItem(routeIndex)).click();
+  }
+
+  public async collapse(routeIndex: number): Promise<void> {
+    await (await this.getMenuItem(routeIndex)).$('app-svg').click();
   }
 
   public async selectBodyType(type: BodyTypes) {
     await $(`#body-type-${BodyTypes[type]}`).click();
   }
 
-  public async add(): Promise<void> {
-    await this.addBtn.click();
+  public async openAddMenu(): Promise<void> {
+    await $('#routes-add-dropdown .dropdown-toggle').click();
+  }
+
+  public async openTemplates(): Promise<void> {
+    await $('#routes-add-dropdown .dropdown-toggle').click();
+    await $('#routes-add-dropdown-menu .dropdown-item:nth-child(1)').click();
+  }
+
+  public async addCRUDRoute(): Promise<void> {
+    await $('#routes-add-dropdown .dropdown-toggle').click();
+    await $('#routes-add-dropdown-menu .dropdown-item:nth-child(2)').click();
+  }
+
+  public async addHTTPRoute(): Promise<void> {
+    await $('#routes-add-dropdown .dropdown-toggle').click();
+    await $('#routes-add-dropdown-menu .dropdown-item:nth-child(3)').click();
+  }
+
+  public async addFolder(): Promise<void> {
+    await $('#routes-add-dropdown .dropdown-toggle').click();
+    await $('#routes-add-dropdown-menu .dropdown-item:nth-child(4)').click();
+  }
+
+  public async selectTemplateTab(index: 1 | 2): Promise<void> {
+    await this.getTemplateTab(index).click();
   }
 
   public async remove(index: number) {
-    await contextMenu.clickAndConfirm('routes', index, 6);
+    await contextMenu.clickAndConfirm(
+      'routes',
+      index,
+      ContextMenuRouteActions.DELETE
+    );
+  }
+
+  public async removeFolder(index: number) {
+    await contextMenu.clickAndConfirm(
+      'routes',
+      index,
+      ContextMenuFolderActions.DELETE
+    );
+  }
+
+  public async selectTemplate(index: 1 | 2): Promise<void> {
+    this.getTemplateTab(index).click();
+  }
+
+  public async assertMenuEntryText(
+    index: number,
+    expectedText: string
+  ): Promise<void> {
+    const text = await (await this.getMenuItem(index)).getText();
+    expect(text).toContain(expectedText);
   }
 
   public async assertActiveMenuEntryText(expectedText: string): Promise<void> {
@@ -185,20 +347,33 @@ class Routes {
 
   public async assertCount(expected: number) {
     await utils.countElements(
-      $$('.routes-menu .menu-list .nav-item'),
+      $$('.routes-menu .menu-list .nav-item:not(.d-none)'),
       expected
     );
   }
 
   public async assertMethod(expected: string) {
-    await utils.assertElementText(
-      $('app-custom-select[formcontrolname="method"] .dropdown-toggle-label'),
-      expected
-    );
+    await utils.assertDropdownValue('method', expected);
+  }
+
+  public async setMethod(index: number) {
+    await utils.setDropdownValue('methods', index);
   }
 
   public async assertPath(expected: string) {
     expect(await this.pathInput.getValue()).toEqual(expected);
+  }
+
+  public async setTemplatePrompt(text: string) {
+    await utils.setElementValue(this.templatePromptInput, text);
+  }
+
+  public async clickTemplateGenerate() {
+    await this.templateGenerateBtn.click();
+  }
+
+  public async setPath(text: string) {
+    await utils.setElementValue(this.pathInput, text);
   }
 
   public async assertCountRouteResponses(expected: number) {
@@ -215,12 +390,11 @@ class Routes {
   }
 
   public async assertRouteResponseStatusCode(expected: string) {
-    await utils.assertElementText(
-      $(
-        'app-custom-select[formcontrolname="statusCode"] .dropdown-toggle-label'
-      ),
-      expected
-    );
+    await utils.assertDropdownValue('statusCode', expected);
+  }
+
+  public async setRouteResponseStatusCode(statusIndex: number) {
+    await utils.setDropdownValue('status-code', statusIndex);
   }
 
   public async setFile(value: string): Promise<void> {
@@ -232,7 +406,11 @@ class Routes {
   }
 
   public async toggleDisable(routeIndex: number) {
-    await contextMenu.click('routes', routeIndex, 5);
+    await contextMenu.click(
+      'routes',
+      routeIndex,
+      ContextMenuRouteActions.TOGGLE
+    );
   }
 
   public async setFilter(text: string) {
@@ -259,6 +437,13 @@ class Routes {
     await $(
       `.route-responses-dropdown-menu .dropdown-item:nth-child(${index})`
     ).click();
+  }
+
+  public async assertDataBucketMenuLabel(expected: string) {
+    await utils.assertElementText(
+      $('#databuckets-dropdown .dropdown-toggle-label'),
+      expected
+    );
   }
 
   public async openDataBucketMenu() {
@@ -300,6 +485,10 @@ class Routes {
     }
   }
 
+  public async assertSelectedRouteResponseLabel(expected: string) {
+    await utils.assertElementText(this.routeResponseDropdownlabel, expected);
+  }
+
   public async assertDefaultRouteResponseClass(
     index: number,
     className: string
@@ -324,21 +513,30 @@ class Routes {
 
   public async addResponseRule(rule: ResponseRule) {
     await $('app-route-response-rules .btn.add-rule').click();
-    await $(
-      'app-route-response-rules .rule-item:last-of-type .form-inline select[formcontrolname="target"]'
-    ).selectByAttribute('value', rule.target);
+    const lastRuleIndex = (await $$('.rule-item').length) - 1;
+    await utils.setDropdownValue(
+      `rules${lastRuleIndex}target`,
+      this.rulesTargetIndexes[rule.target]
+    );
     await utils.setElementValue(
       $(
-        'app-route-response-rules .rule-item:last-of-type .form-inline input[formcontrolname="modifier"]'
+        'app-route-response-rules .rule-item:last-of-type input[formcontrolname="modifier"]'
       ),
       rule.modifier
     );
-    await utils.setElementValue(
-      $(
-        'app-route-response-rules .rule-item:last-of-type .form-inline input[formcontrolname="value"]'
-      ),
-      rule.value
+    await utils.setDropdownValue(
+      `rules${lastRuleIndex}operator`,
+      this.rulesOperatorsIndexes[rule.operator]
     );
+
+    if (rule.operator !== 'null') {
+      await utils.setElementValue(
+        $(
+          'app-route-response-rules .rule-item:last-of-type input[formcontrolname="value"]'
+        ),
+        rule.value
+      );
+    }
   }
 
   public async removeResponseRule(index: number) {
@@ -386,6 +584,10 @@ class Routes {
     await $('#response-modes-SEQUENTIAL').click();
   }
 
+  public async toggleRouteResponseFallback() {
+    await $('#response-modes-FALLBACK').click();
+  }
+
   public async toggleRouteResponseDisableRules() {
     await $('#response-modes-DISABLE_RULES').click();
   }
@@ -398,11 +600,28 @@ class Routes {
         '#route-responses-menu .nav.nav-tabs .nav-item:nth-child(2) .nav-link',
       RULES:
         '#route-responses-menu .nav.nav-tabs .nav-item:nth-child(3) .nav-link',
+      CALLBACKS:
+        '#route-responses-menu .nav.nav-tabs .nav-item:nth-child(4) .nav-link',
       SETTINGS:
-        '#route-responses-menu .nav.nav-tabs .nav-item:nth-child(4) .nav-link'
+        '#route-responses-menu .nav.nav-tabs .nav-item:nth-child(5) .nav-link'
     };
 
     await $(selectors[tabName]).click();
+  }
+
+  public async assertRoutePaddingLevel(
+    index: number,
+    level: number
+  ): Promise<void> {
+    const levels = {
+      1: '14px',
+      2: '35px',
+      3: '63px'
+    };
+    const subRoutePadding = await (
+      await this.getMenuItem(index)
+    ).getCSSProperty('padding-left');
+    expect(subRoutePadding.value).toEqual(levels[level]);
   }
 }
 

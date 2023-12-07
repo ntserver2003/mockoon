@@ -1,4 +1,13 @@
-import { Header, Methods, Transaction } from '@mockoon/commons';
+import {
+  Callback,
+  Folder,
+  FolderChild,
+  Header,
+  InvokedCallback,
+  Methods,
+  Route,
+  Transaction
+} from '@mockoon/commons';
 import { Request, Response } from 'express';
 import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
@@ -55,19 +64,6 @@ export const IsEmpty = (obj) =>
   !Object.entries(obj || {}).length;
 
 /**
- * Return a random integer
- *
- * @param a
- * @param b
- */
-export const RandomInt = (a = 1, b = 0) => {
-  const lower = Math.ceil(Math.min(a, b));
-  const upper = Math.floor(Math.max(a, b));
-
-  return Math.floor(lower + Math.random() * (upper - lower + 1));
-};
-
-/**
  * Decompress body based on content-encoding
  *
  * @param response
@@ -95,6 +91,48 @@ export const DecompressBody = (response: Response) => {
 
   return body.toString('utf-8');
 };
+
+/**
+ * Returns true if given HTTP method is a body supporting one. Otherwise false.
+ * @param method
+ */
+export function isBodySupportingMethod(method: Methods): boolean {
+  return [Methods.put, Methods.post, Methods.patch].indexOf(method) >= 0;
+}
+
+/**
+ * Creates a callback invocation record which has information
+ * about the invoked details.
+ * @param callback
+ * @param url
+ * @param requestBody
+ * @param requestHeaders
+ * @param fetchResponse
+ * @param responseBody
+ */
+export function CreateCallbackInvocation(
+  callback: Callback,
+  url: string,
+  requestBody: string | null | undefined,
+  requestHeaders: Header[],
+  fetchResponse: globalThis.Response,
+  responseBody: any
+): InvokedCallback {
+  const resHeadersObj = Object.fromEntries(fetchResponse.headers.entries());
+
+  return {
+    name: callback.name,
+    url,
+    method: callback.method,
+    requestBody,
+    requestHeaders,
+    status: fetchResponse.status,
+    responseBody,
+    responseHeaders: Object.keys(resHeadersObj).map(
+      (k) => ({ key: k, value: resHeadersObj[k] }) as Header
+    )
+  };
+}
 
 /**
  * Create a Transaction object from express req/res.
@@ -131,6 +169,7 @@ export function CreateTransaction(
     },
     response: {
       statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
       headers: TransformHeaders(response.getHeaders()).sort(AscSort),
       body: DecompressBody(response)
     },
@@ -233,3 +272,61 @@ export const convertPathToArray = (str: string): string | string[] => {
 
   return str;
 };
+
+/**
+ * List routes in the order they appear in a folder children array (can be called recursively)
+ *
+ * @param folderChildren
+ * @param allFolders
+ * @param allRoutes
+ * @returns
+ */
+export const routesFromFolder = (
+  folderChildren: FolderChild[],
+  allFolders: Folder[],
+  allRoutes: Route[]
+): Route[] => {
+  const routesList: Route[] = [];
+
+  folderChildren.forEach((folderChild) => {
+    if (folderChild.type === 'route') {
+      const foundRoute = allRoutes.find(
+        (route) => route.uuid === folderChild.uuid
+      );
+
+      if (foundRoute) {
+        routesList.push(foundRoute);
+      }
+    } else {
+      const subFolder = allFolders.find(
+        (folder) => folder.uuid === folderChild.uuid
+      );
+
+      if (subFolder) {
+        routesList.push(
+          ...routesFromFolder(subFolder.children, allFolders, allRoutes)
+        );
+      }
+    }
+  });
+
+  return routesList;
+};
+
+/**
+ * Remove duplicate slashes from a string
+ *
+ * @param str
+ * @returns
+ */
+export const dedupSlashes = (str: string) => str.replace(/\/{2,}/g, '/');
+
+/**
+ * Prepare a path for express: add a leading slash, deduplicate slashes and replace spaces with %20
+ *
+ * @param endpointPrefix
+ * @param endpoint
+ * @returns
+ */
+export const preparePath = (endpointPrefix: string, endpoint: string) =>
+  dedupSlashes(`/${endpointPrefix}/${endpoint.replace(/ /g, '%20')}`);

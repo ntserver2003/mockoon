@@ -11,7 +11,9 @@ export const IPCMainListenerChannels = [
   'APP_SET_FAKER_OPTIONS',
   'APP_UPDATE_ENVIRONMENT',
   'APP_WRITE_CLIPBOARD',
-  'APP_SHOW_FILE'
+  'APP_SHOW_FILE',
+  'APP_SHOW_FOLDER',
+  'APP_ZOOM'
 ];
 
 export const IPCMainHandlerChannels = [
@@ -34,7 +36,6 @@ export const IPCMainHandlerChannels = [
   'APP_WRITE_FILE',
   'APP_WRITE_ENVIRONMENT_DATA',
   'APP_WRITE_SETTINGS_DATA',
-  'APP_NEW_STORAGE_MIGRATION',
   'APP_GET_OS',
   'APP_UNWATCH_FILE',
   'APP_UNWATCH_ALL_FILE'

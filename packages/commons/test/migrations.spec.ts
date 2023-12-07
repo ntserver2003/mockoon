@@ -1,5 +1,12 @@
 import { expect } from 'chai';
-import { BodyTypes, Migrations, ResponseMode } from '../src';
+import {
+  BodyTypes,
+  Migrations,
+  PostMigrationActions,
+  ResponseMode,
+  RouteDefault,
+  RouteResponseDefault
+} from '../src';
 
 const applyMigration = (migrationId: number, environment: any) => {
   const migrationFunction = Migrations.find(
@@ -10,7 +17,7 @@ const applyMigration = (migrationId: number, environment: any) => {
     throw new Error('Cannot find migration function');
   }
 
-  migrationFunction(environment);
+  return migrationFunction(environment);
 };
 
 describe('Migrations', () => {
@@ -297,6 +304,256 @@ describe('Migrations', () => {
         BodyTypes.INLINE
       );
       expect(environment.routes[0].responses[0].databucketID).to.be.equal('');
+    });
+  });
+
+  describe('migration n. 25', () => {
+    it('should add `folders` property to an environment', () => {
+      const environment = { routes: [{ uuid: '1' }, { uuid: '2' }] };
+
+      applyMigration(25, environment);
+
+      expect(environment['folders']).to.be.an('array');
+      expect(environment['folders']).to.be.empty;
+
+      expect(environment['rootChildren']).to.be.an('array');
+      expect(environment['rootChildren']).to.be.deep.equal([
+        { type: 'route', uuid: '1' },
+        { type: 'route', uuid: '2' }
+      ]);
+    });
+  });
+
+  describe('migration n. 26', () => {
+    it('should add `type` property to routes', () => {
+      const environment = { routes: [{ uuid: '1' }, { uuid: '2' }] };
+
+      applyMigration(26, environment);
+
+      expect(environment.routes[0]['type']).to.equal(RouteDefault.type);
+      expect(environment.routes[1]['type']).to.equal(RouteDefault.type);
+    });
+  });
+
+  describe('migration n. 27', () => {
+    it('should set hostname to null by default', () => {
+      const environment1 = { hostname: '0.0.0.0' };
+      const environment2 = { hostname: '127.0.0.1' };
+
+      applyMigration(27, environment1);
+      applyMigration(27, environment2);
+
+      expect(environment1.hostname).to.equal('');
+      expect(environment2.hostname).to.equal('127.0.0.1');
+    });
+  });
+
+  describe('migration n. 28', () => {
+    it('should provide a default crudKey property to it', () => {
+      const environment: any = {
+        routes: [{ responses: [{ filePath: './file' }, { filePath: '' }] }]
+      };
+
+      applyMigration(28, environment);
+
+      expect(environment.routes[0].responses[0].crudKey).to.equal(
+        RouteResponseDefault.crudKey
+      );
+      expect(environment.routes[0].responses[1].crudKey).to.equal(
+        RouteResponseDefault.crudKey
+      );
+    });
+
+    it('Dont set crudKey to id if already defined', () => {
+      const environment: any = {
+        routes: [
+          {
+            responses: [
+              { crudKey: 'uuid', filePath: './file' },
+              { crudKey: 'uuid', filePath: '' }
+            ]
+          }
+        ]
+      };
+
+      applyMigration(28, environment);
+
+      expect(environment.routes[0].responses[0].crudKey).to.not.equal(
+        RouteResponseDefault.crudKey
+      );
+      expect(environment.routes[0].responses[1].crudKey).to.not.equal(
+        RouteResponseDefault.crudKey
+      );
+      expect(environment.routes[0].responses[0].crudKey).to.deep.equal('uuid');
+      expect(environment.routes[0].responses[1].crudKey).to.deep.equal('uuid');
+    });
+  });
+
+  describe('migration n. 29', () => {
+    it('Update faker functions in inline body to version 8', () => {
+      const environment: any = {
+        routes: [
+          {
+            responses: [
+              {
+                bodyType: 'INLINE',
+                body: '{\n  "name": "{{{faker \'datatype.number\'}}}",\n  "name": "{{{faker \'name.firstName\'}}}"\n    "title": "{{{setVar \'x\' (faker \'name.prefix\' sex=\'male\')}}}"\n}'
+              }
+            ]
+          }
+        ]
+      };
+      applyMigration(29, environment);
+
+      expect(environment.routes[0].responses[0].body).to.equal(
+        '{\n  "name": "{{{faker \'number.int\' max=99999}}}",\n  "name": "{{{faker \'person.firstName\'}}}"\n    "title": "{{{setVar \'x\' (faker \'person.prefix\' sex=\'male\')}}}"\n}'
+      );
+    });
+
+    it('Update faker functions in databucket to version 8', () => {
+      const environment: any = {
+        routes: [
+          {
+            responses: [
+              {
+                bodyType: 'DATABUCKET',
+                databucketID: 's3km'
+              }
+            ]
+          }
+        ],
+        data: [
+          {
+            uuid: '18d9dcec-5fc7-422d-98e8-4d9a7330b4f4',
+            id: 's3km',
+            name: 'bucket_1',
+            documentation: '',
+            value:
+              '{\n  "name": "{{faker \'name.firstName\'}}"\n    "image": "{{faker \'image.abstract\' width=128 height=128}}"\n}'
+          }
+        ]
+      };
+      applyMigration(29, environment);
+
+      expect(environment.data[0].value).to.equal(
+        '{\n  "name": "{{faker \'person.firstName\'}}"\n    "image": "{{faker \'image.urlLoremFlickr\' width=128 height=128 category="abstract"}}"\n}'
+      );
+    });
+  });
+
+  describe('migration n. 30', () => {
+    it('should have empty callbacks array by default', () => {
+      const environment1: any = { routes: [{ responses: [{}] }] };
+      const environment2: any = { callbacks: [] };
+
+      applyMigration(30, environment1);
+      applyMigration(30, environment2);
+
+      expect(environment1.callbacks).to.be.not.undefined;
+      expect(environment1.callbacks).to.have.length(0);
+      expect(environment1.routes[0].responses[0].callbacks).to.be.not.undefined;
+      expect(environment1.routes[0].responses[0].callbacks).to.have.length(0);
+      expect(environment2.callbacks).to.have.length(0);
+    });
+  });
+
+  describe('migration n. 31', () => {
+    it('should remove route toggling and return the list of disabled route uuids', () => {
+      const environment1: any = {
+        uuid: 'a',
+        routes: [
+          { uuid: 'a1', enabled: true },
+          { uuid: 'a2', enabled: true }
+        ]
+      };
+      const environment2: any = {
+        uuid: 'b',
+        routes: [
+          { uuid: 'b1', enabled: true },
+          { uuid: 'b2', enabled: false }
+        ]
+      };
+      const environment3: any = {
+        uuid: 'c',
+        routes: [
+          { uuid: 'c1', enabled: false },
+          { uuid: 'c2', enabled: false }
+        ]
+      };
+
+      const postMigrationAction1 = applyMigration(31, environment1);
+      const postMigrationAction2 = applyMigration(31, environment2);
+      const postMigrationAction3 = applyMigration(31, environment3);
+
+      expect(environment1.routes[0].enabled).to.be.undefined;
+      expect(environment1.routes[1].enabled).to.be.undefined;
+      expect(environment2.routes[0].enabled).to.be.undefined;
+      expect(environment2.routes[1].enabled).to.be.undefined;
+      expect(environment3.routes[0].enabled).to.be.undefined;
+      expect(environment3.routes[1].enabled).to.be.undefined;
+
+      expect(postMigrationAction1).to.deep.equal({
+        type: PostMigrationActions.DISABLED_ROUTES_MIGRATION,
+        disabledRoutesUuids: []
+      });
+      expect(postMigrationAction2).to.deep.equal({
+        type: PostMigrationActions.DISABLED_ROUTES_MIGRATION,
+        disabledRoutesUuids: ['b2']
+      });
+      expect(postMigrationAction3).to.deep.equal({
+        type: PostMigrationActions.DISABLED_ROUTES_MIGRATION,
+        disabledRoutesUuids: ['c1', 'c2']
+      });
+    });
+  });
+
+  describe('migration n. 32', () => {
+    it('should remove folder collapse and return the list of collapsed folders uuids', () => {
+      const environment1: any = {
+        uuid: 'a',
+        folders: [
+          { uuid: 'a1', collapsed: false },
+          { uuid: 'a2', collapsed: false }
+        ]
+      };
+      const environment2: any = {
+        uuid: 'b',
+        folders: [
+          { uuid: 'b1', collapsed: false },
+          { uuid: 'b2', collapsed: true }
+        ]
+      };
+      const environment3: any = {
+        uuid: 'c',
+        folders: [
+          { uuid: 'c1', collapsed: true },
+          { uuid: 'c2', collapsed: true }
+        ]
+      };
+
+      const postMigrationAction1 = applyMigration(32, environment1);
+      const postMigrationAction2 = applyMigration(32, environment2);
+      const postMigrationAction3 = applyMigration(32, environment3);
+
+      expect(environment1.folders[0].collapsed).to.be.undefined;
+      expect(environment1.folders[1].collapsed).to.be.undefined;
+      expect(environment2.folders[0].collapsed).to.be.undefined;
+      expect(environment2.folders[1].collapsed).to.be.undefined;
+      expect(environment3.folders[0].collapsed).to.be.undefined;
+      expect(environment3.folders[1].collapsed).to.be.undefined;
+
+      expect(postMigrationAction1).to.deep.equal({
+        type: PostMigrationActions.COLLAPSED_FOLDERS_MIGRATION,
+        collapsedFoldersUuids: []
+      });
+      expect(postMigrationAction2).to.deep.equal({
+        type: PostMigrationActions.COLLAPSED_FOLDERS_MIGRATION,
+        collapsedFoldersUuids: ['b2']
+      });
+      expect(postMigrationAction3).to.deep.equal({
+        type: PostMigrationActions.COLLAPSED_FOLDERS_MIGRATION,
+        collapsedFoldersUuids: ['c1', 'c2']
+      });
     });
   });
 });

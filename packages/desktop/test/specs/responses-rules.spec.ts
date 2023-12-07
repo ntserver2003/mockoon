@@ -4,6 +4,7 @@ import http from '../libs/http';
 import { HttpCall } from '../libs/models';
 import routes from '../libs/routes';
 import utils from '../libs/utils';
+import { Texts } from '../../src/renderer/app/constants/texts.constant';
 
 describe('Responses rules', () => {
   describe('Create, update, delete and test basic rules', async () => {
@@ -617,7 +618,7 @@ describe('Rules tabs', () => {
 
     // this is needed for the tab re-render to complete
     await browser.pause(100);
-    await utils.assertElementText(routes.rulesTab, 'Rules 1');
+    await utils.assertElementText(routes.rulesTab, 'Rules\n1');
 
     await routes.addResponseRule({
       modifier: 'test',
@@ -629,7 +630,7 @@ describe('Rules tabs', () => {
 
     // this is needed for the tab re-render to complete
     await browser.pause(100);
-    await utils.assertElementText(routes.rulesTab, 'Rules 2');
+    await utils.assertElementText(routes.rulesTab, 'Rules\n2');
 
     await routes.addRouteResponse();
     await routes.assertCountRouteResponses(4);
@@ -649,7 +650,7 @@ describe('Rules tabs', () => {
 
     // this is needed for the tab re-render to complete
     await browser.pause(100);
-    await utils.assertElementText(routes.rulesTab, 'Rules 1');
+    await utils.assertElementText(routes.rulesTab, 'Rules\n1');
   });
 });
 
@@ -704,6 +705,11 @@ describe('Response mode random, sequential, disable rules', () => {
       'text-warning',
       true
     );
+    await utils.assertElementText(
+      routes.rulesWarningMessage,
+      Texts.DISABLED_RULES_WARNING
+    );
+    expect(await routes.rulesWarningIcon.isExisting()).toBeTruthy();
 
     await utils.waitForAutosave();
     await file.verifyObjectPropertyInFile(
@@ -726,12 +732,38 @@ describe('Response mode random, sequential, disable rules', () => {
       'text-warning',
       true
     );
+    expect(await routes.rulesWarningMessage.isExisting()).toBeFalsy();
+    expect(await routes.rulesWarningIcon.isExisting()).toBeFalsy();
 
     await utils.waitForAutosave();
     await file.verifyObjectPropertyInFile(
       './tmp/storage/response-rules.json',
       ['routes.4.responseMode'],
       [null]
+    );
+  });
+
+  it('should switch to fallback responses and other buttons should be disabled', async () => {
+    await routes.toggleRouteResponseFallback();
+    await utils.assertHasClass(routes.fallbackResponseBtn, 'text-primary');
+    await utils.assertHasClass(routes.randomResponseBtn, 'text-primary', true);
+    await utils.assertHasClass(
+      routes.sequentialResponseBtn,
+      'text-primary',
+      true
+    );
+    await utils.assertHasClass(
+      routes.disableRulesResponseBtn,
+      'text-warning',
+      true
+    );
+    await utils.waitForAutosave();
+    expect(await routes.rulesWarningMessage.isExisting()).toBeFalsy();
+    expect(await routes.rulesWarningIcon.isExisting()).toBeFalsy();
+    await file.verifyObjectPropertyInFile(
+      './tmp/storage/response-rules.json',
+      ['routes.4.responseMode'],
+      ['FALLBACK']
     );
   });
 });

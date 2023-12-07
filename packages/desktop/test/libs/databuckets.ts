@@ -1,39 +1,33 @@
-import { ChainablePromiseElement } from 'webdriverio';
-import contextMenu from '../libs/context-menu';
+import contextMenu, {
+  ContextMenuDatabucketActions
+} from '../libs/context-menu';
 import utils from '../libs/utils';
 
 class Databuckets {
-  private activeMenuEntrySelector =
-    '.databuckets-menu .nav-item .nav-link.active';
-
-  public get nameInput(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get nameInput() {
     return $('app-environment-databuckets input[formcontrolname="name"]');
   }
 
-  public get documentationInput(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get documentationInput() {
     return $(
       'app-environment-databuckets input[formcontrolname="documentation"]'
     );
   }
 
-  public get valueInput(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get valueInput() {
     return $('app-environment-databuckets input[formcontrolname="value"]');
   }
 
-  public get filter(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get filter() {
     return $('input[id="databucket-filter"]');
   }
 
-  public get idElement(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get idElement() {
     return $('.environment-databuckets-footer div');
   }
 
-  public get addBtn(): ChainablePromiseElement<WebdriverIO.Element> {
+  public get addBtn() {
     return $('.databuckets-menu .nav:first-of-type .nav-item .nav-link');
-  }
-
-  private get activeMenuEntry(): ChainablePromiseElement<WebdriverIO.Element> {
-    return $(this.activeMenuEntrySelector);
   }
 
   public async select(databucketIndex: number): Promise<void> {
@@ -47,19 +41,35 @@ class Databuckets {
   }
 
   public async duplicate(index: number) {
-    await contextMenu.click('databuckets', index, 1);
+    await contextMenu.click(
+      'databuckets',
+      index,
+      ContextMenuDatabucketActions.DUPLICATE
+    );
   }
 
   public async duplicateToEnv(index: number) {
-    await contextMenu.click('databuckets', index, 2);
+    await contextMenu.click(
+      'databuckets',
+      index,
+      ContextMenuDatabucketActions.DUPLICATE_TO_ENV
+    );
   }
 
   public async copyID(index: number) {
-    await contextMenu.click('databuckets', index, 3);
+    await contextMenu.click(
+      'databuckets',
+      index,
+      ContextMenuDatabucketActions.COPY_ID
+    );
   }
 
   public async remove(index: number) {
-    await contextMenu.clickAndConfirm('databuckets', index, 4);
+    await contextMenu.clickAndConfirm(
+      'databuckets',
+      index,
+      ContextMenuDatabucketActions.DELETE
+    );
   }
 
   public async assertName(expected: string) {
@@ -92,7 +102,7 @@ class Databuckets {
 
   public async assertCount(expected: number) {
     await utils.countElements(
-      $$('.databuckets-menu .menu-list .nav-item'),
+      $$('.databuckets-menu .menu-list .nav-item:not(.d-none)'),
       expected
     );
   }

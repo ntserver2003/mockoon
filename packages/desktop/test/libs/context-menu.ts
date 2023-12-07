@@ -1,13 +1,51 @@
-import { ChainablePromiseElement } from 'webdriverio';
+import { ChainablePromiseElement } from '@wdio/globals/node_modules/webdriverio';
 import utils from '../libs/utils';
 
-type Targets = 'environments' | 'routes' | 'databuckets';
+type Targets = 'environments' | 'routes' | 'databuckets' | 'callbacks';
+
+export enum ContextMenuEnvironmentActions {
+  DUPLICATE = 1,
+  COPY_JSON = 2,
+  SHOW_FOLDER = 3,
+  MOVE_FOLDER = 4,
+  CLOSE = 5
+}
+
+export enum ContextMenuDatabucketActions {
+  DUPLICATE = 1,
+  DUPLICATE_TO_ENV = 2,
+  COPY_ID = 3,
+  DELETE = 4
+}
+
+export enum ContextMenuCallbackActions {
+  DUPLICATE = 1,
+  DUPLICATE_TO_ENV = 2,
+  DELETE = 3
+}
+
+export enum ContextMenuRouteActions {
+  DUPLICATE = 1,
+  DUPLICATE_TO_ENV = 2,
+  COPY_JSON = 3,
+  COPY_PATH = 4,
+  TOGGLE = 5,
+  DELETE = 6
+}
+
+export enum ContextMenuFolderActions {
+  ADD_CRUD = 1,
+  ADD_HTTP = 2,
+  ADD_FOLDER = 3,
+  DELETE = 4
+}
 
 class ContextMenu {
   private targetSelectors = {
     environments: '.environments-menu',
     routes: '.routes-menu',
-    databuckets: '.databuckets-menu'
+    databuckets: '.databuckets-menu',
+    callbacks: '.callbacks-menu'
   };
 
   public getItem(
@@ -35,7 +73,12 @@ class ContextMenu {
   public async click(
     targetMenu: Targets,
     menuItemIndex?: number,
-    contextMenuItemIndex?: number
+    contextMenuItemIndex?:
+      | ContextMenuEnvironmentActions
+      | ContextMenuRouteActions
+      | ContextMenuFolderActions
+      | ContextMenuDatabucketActions
+      | ContextMenuCallbackActions
   ) {
     await this.open(targetMenu, menuItemIndex);
     await this.getItem(contextMenuItemIndex).click();

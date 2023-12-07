@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { generateUUID } from '@mockoon/commons';
 import { resolve } from 'path';
 import dialogs from '../libs/dialogs';
 import environments from '../libs/environments';
@@ -11,17 +11,14 @@ import settings from '../libs/settings';
 import utils from '../libs/utils';
 
 describe('Environment external reload', () => {
-  const newUUID = randomUUID();
+  const newUUID = generateUUID();
 
   it('should enable automated file watching and assert that file watching is disabled by default', async () => {
     // wait a bit for app to load, apparently cannot open the modal too soon
     await browser.pause(1000);
     await settings.open();
-    await settings.assertSelectSettingValue(
-      'settings-storage-file-watcher',
-      'disabled'
-    );
-    await settings.selectSettingValue('settings-storage-file-watcher', 'auto');
+    await settings.assertDropdownSettingValue('fileWatcherEnabled', 'Disabled');
+    await settings.setDropdownSettingValue('settings-storage-file-watcher', 3);
     await modals.close();
   });
 
@@ -57,7 +54,7 @@ describe('Environment external reload', () => {
     await environments.assertMenuEntryText(
       1,
       'env 1 (change1)',
-      '0.0.0.0:5005'
+      'localhost:5005'
     );
 
     await navigation.assertHeaderValue('ENV_LOGS', 'Logs');
@@ -100,11 +97,11 @@ describe('Environment external reload', () => {
     await file.editEnvironment('./tmp/storage/ui-1.json', {
       name: 'env 1 (change2)',
       port: 5005,
-      uuid: randomUUID()
+      uuid: generateUUID()
     });
     await file.editEnvironment('./tmp/storage/ui-2.json', {
       name: 'env 2 (change1)',
-      uuid: randomUUID()
+      uuid: generateUUID()
     });
 
     await browser.pause(2000);
@@ -115,6 +112,7 @@ describe('Environment external reload', () => {
   it('should assert the external watch works after a duplicate', async () => {
     await dialogs.save(resolve('./tmp/storage/new-dup-env.json'));
     await environments.duplicate(1);
+    await browser.pause(100);
     await environments.assertActiveMenuEntryText('env 1 (change2) (copy)');
     await utils.waitForAutosave();
     await utils.waitForFileWatcher();
@@ -122,20 +120,15 @@ describe('Environment external reload', () => {
       name: 'env 3 (change1)'
     });
 
+    await browser.pause(2000);
     await environments.assertActiveMenuEntryText('env 3 (change1)');
     await environments.close(2);
   });
 
   it('should switch to prompt mode', async () => {
     await settings.open();
-    await settings.assertSelectSettingValue(
-      'settings-storage-file-watcher',
-      'auto'
-    );
-    await settings.selectSettingValue(
-      'settings-storage-file-watcher',
-      'prompt'
-    );
+    await settings.assertDropdownSettingValue('fileWatcherEnabled', 'Auto');
+    await settings.setDropdownSettingValue('settings-storage-file-watcher', 2);
     await modals.close();
     await browser.pause(500);
   });

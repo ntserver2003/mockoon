@@ -1,33 +1,36 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   HostListener,
   OnDestroy,
-  OnInit,
-  ViewChild
+  OnInit
 } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
-import { DataBucket, Environment } from '@mockoon/commons';
-import { combineLatest, from, Observable, Subscription } from 'rxjs';
+import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
+import {
+  DataBucket,
+  Environment,
+  ReorderAction,
+  ReorderableContainers
+} from '@mockoon/commons';
+import { Observable, Subject, from } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
+  takeUntil,
   tap
 } from 'rxjs/operators';
 import { DatabucketsContextMenu } from 'src/renderer/app/components/context-menu/context-menus';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { FocusableInputs } from 'src/renderer/app/enums/ui.enum';
+import { trackByUuid } from 'src/renderer/app/libs/utils.lib';
 import { ContextMenuEvent } from 'src/renderer/app/models/context-menu.model';
 import { EnvironmentsService } from 'src/renderer/app/services/environments.service';
 import { EventsService } from 'src/renderer/app/services/events.service';
-import { UIService } from 'src/renderer/app/services/ui.service';
-import { updateEnvironmentDatabucketsFilterAction } from 'src/renderer/app/stores/actions';
+import { updateFilterAction } from 'src/renderer/app/stores/actions';
 import { Store } from 'src/renderer/app/stores/store';
-import { Config } from 'src/shared/config';
+import { Config } from 'src/renderer/config';
 import { Settings } from 'src/shared/models/settings.model';
 
 @Component({
@@ -37,25 +40,23 @@ import { Settings } from 'src/shared/models/settings.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatabucketsMenuComponent implements OnInit, OnDestroy {
-  @ViewChild('databucketsMenu') private databucketsMenu: ElementRef;
   public settings$: Observable<Settings>;
   public activeEnvironment$: Observable<Environment>;
   public databucketList$: Observable<DataBucket[]>;
   public activeDatabucket$: Observable<DataBucket>;
   public databucketsFilter$: Observable<string>;
-  public databucketsFilter: FormControl;
-  public dragIsDisabled = false;
+  public databucketsFilter: UntypedFormControl;
   public focusableInputs = FocusableInputs;
   public os$: Observable<string>;
   public menuSize = Config.defaultSecondaryMenuSize;
-  private databucketsFilterSubscription: Subscription;
+  public trackByUuid = trackByUuid;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private environmentsService: EnvironmentsService,
     private store: Store,
     private eventsService: EventsService,
-    private uiService: UIService,
-    private formBuilder: FormBuilder
+    private formBuilder: UntypedFormBuilder
   ) {}
 
   @HostListener('keydown', ['$event'])
@@ -72,64 +73,43 @@ export class DatabucketsMenuComponent implements OnInit, OnDestroy {
     this.activeEnvironment$ = this.store.selectActiveEnvironment();
     this.activeDatabucket$ = this.store.selectActiveDatabucket();
     this.settings$ = this.store.select('settings');
-    this.databucketsFilter$ = this.store.select('databucketsFilter');
-
-    this.databucketList$ = combineLatest([
-      this.store.selectActiveEnvironment().pipe(
-        filter((activeEnvironment) => !!activeEnvironment),
-        distinctUntilChanged(),
-        map((activeEnvironment) => activeEnvironment.data)
-      ),
-      this.databucketsFilter$.pipe(
-        tap((search) => {
-          this.databucketsFilter.patchValue(search, { emitEvent: false });
-        })
-      )
-    ]).pipe(
-      map(([databuckets, search]) => {
-        this.dragIsDisabled = search.length > 0;
-
-        return databuckets.filter(
-          (databucket) =>
-            databucket.name.toLowerCase().includes(search.toLowerCase()) ||
-            databucket.documentation
-              .toLowerCase()
-              .includes(search.toLowerCase())
-        );
+    this.databucketsFilter$ = this.store.selectFilter('databuckets').pipe(
+      tap((search) => {
+        this.databucketsFilter.patchValue(search, { emitEvent: false });
       })
     );
 
-    this.uiService.scrollDatabucketsMenu.subscribe((scrollDirection) => {
-      this.uiService.scroll(
-        this.databucketsMenu.nativeElement,
-        scrollDirection
-      );
-    });
+    this.databucketList$ = this.store.selectActiveEnvironment().pipe(
+      filter((activeEnvironment) => !!activeEnvironment),
+      distinctUntilChanged(),
+      map((activeEnvironment) => activeEnvironment.data)
+    );
 
-    this.databucketsFilterSubscription = this.databucketsFilter.valueChanges
+    this.databucketsFilter.valueChanges
       .pipe(
         debounceTime(10),
         tap((search) =>
-          this.store.update(updateEnvironmentDatabucketsFilterAction(search))
-        )
+          this.store.update(updateFilterAction('databuckets', search))
+        ),
+        takeUntil(this.destroy$)
       )
       .subscribe();
   }
 
   ngOnDestroy() {
-    this.databucketsFilterSubscription.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.unsubscribe();
   }
 
   /**
    * Callback called when reordering databuckets
    *
-   * @param event
+   * @param reorderAction
    */
-  public reorderDatabuckets(event: CdkDragDrop<string[]>) {
-    this.environmentsService.moveMenuItem(
-      'databuckets',
-      event.previousIndex,
-      event.currentIndex
+  public reorganizeDatabuckets(reorderAction: ReorderAction) {
+    this.environmentsService.reorderItems(
+      reorderAction as ReorderAction<string>,
+      ReorderableContainers.DATABUCKETS
     );
   }
 
@@ -138,9 +118,6 @@ export class DatabucketsMenuComponent implements OnInit, OnDestroy {
    */
   public addDatabucket() {
     this.environmentsService.addDatabucket();
-    if (this.databucketsMenu) {
-      this.uiService.scrollToBottom(this.databucketsMenu.nativeElement);
-    }
   }
 
   /**
@@ -174,6 +151,6 @@ export class DatabucketsMenuComponent implements OnInit, OnDestroy {
    * Clear the databucket filter
    */
   public clearFilter() {
-    this.store.update(updateEnvironmentDatabucketsFilterAction(''));
+    this.store.update(updateFilterAction('databuckets', ''));
   }
 }
